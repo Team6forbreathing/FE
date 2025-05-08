@@ -1,17 +1,32 @@
 import React, { useState } from 'react';
 import '../styles/Login.css';
-import { Link } from 'react-router-dom';
+import Header from '../components/Header';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    alert(`Username: ${username}\nPassword: ${password}`);
+    setError('');
+
+    const result = await login(username, password);
+    if (result.success) {
+      navigate('/dashboard');
+    } else {
+      setError(result.message);
+    }
   };
 
   return (
+    <>
+      <Header />
+      
     <div className="login-wrapper">
       <form className="login-box" onSubmit={handleLogin}>
         <h2>Login</h2>
@@ -43,6 +58,7 @@ function Login() {
         </div>
       </form>
     </div>
+  </>
   );
 }
 
