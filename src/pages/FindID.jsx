@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import '../styles/FindAccount.css';
 import { Link } from 'react-router-dom';
+import Header from '../components/Header';
+import { useAuth } from '../context/AuthContext';
 
 function FindID() {
   const [name, setName] = useState('');
@@ -13,6 +15,8 @@ function FindID() {
   };
 
   return (
+    <>
+    <Header />
     <div className="find-wrapper">
       <form className="find-box" onSubmit={handleFindID}>
         <h2>Find ID</h2>
@@ -29,6 +33,7 @@ function FindID() {
         </div>
       </form>
     </div>
+    </>
   );
 }
 

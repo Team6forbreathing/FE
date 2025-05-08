@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import '../styles/FindAccount.css';
 import { Link } from 'react-router-dom';
+import Header from '../components/Header';
+import { useAuth } from '../context/AuthContext';
 
 function FindPassword() {
   const [username, setUsername] = useState('');
@@ -13,6 +15,8 @@ function FindPassword() {
   };
 
   return (
+    <>
+    <Header />
     <div className="find-wrapper">
       <form className="find-box" onSubmit={handleFindPassword}>
         <h2>Find Password</h2>
@@ -29,6 +33,7 @@ function FindPassword() {
         </div>
       </form>
     </div>
+    </>
   );
 }
 
