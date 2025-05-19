@@ -113,6 +113,7 @@ function SignUp() {
             <option value="">선택</option>
             <option value="M">남</option>
             <option value="F">여</option>
+            <option value="O">기타</option>
           </select>
         </label>
 
@@ -133,6 +134,7 @@ function SignUp() {
             <option value="">선택</option>
             <option value="true">있음</option>
             <option value="false">없음</option>
+            <option value="false">모름</option>
           </select>
         </label>
 
