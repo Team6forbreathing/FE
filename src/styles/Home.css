@@ -1,41 +1,74 @@
+.home-main {
+  padding: 40px 0;
+  background-color: #121212;
+  color: white;
+  text-align: center;
+  min-height: 100vh;
+}
 
-  .hero {
-    text-align: center;
-    margin-top: 250px;
-  }
-  
-  .hero h1 {
-    font-size: 40px;
-    font-weight: bold;
-  }
-  
-  .subtitle {
-    font-size: 18px;
-    color: #777;
-    margin: 10px 0 20px;
-  }
-  
-  .button-group {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-  }
-  
-  .btn-outline {
-    padding: 10px 20px;
-    border: 1px solid #333;
-    background: white;
-    color: #333;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .btn-solid {
-    padding: 10px 20px;
-    background: #333;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
+.hero h1 {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+.hero p {
+  font-size: 18px;
+  color: #bbb;
+  margin-bottom: 40px;
+}
+
+.description p{
+  color: #ccc;
+  max-width: 100%;
+  margin: 16px auto 32px auto;
+  font-size: 15px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.features {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: 60px;
+  margin-bottom: 60px;
+}
+
+.feature-card {
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 20px;
+  width: 260px;
+  text-align: left;
+}
+
+.feature-card h3 {
+  color: #6c3cc9;
+  margin-bottom: 10px;
+}
+
+.feature-card p {
+  color: #ccc;
+  font-size: 14px;
+}
+
+.cta {
+  margin-top: 150px; 
+}
+.cta h2 {
+  margin-bottom: 20px;
+}
+
+.cta button {
+  padding: 12px 24px;
+  background-color: #6c3cc9;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
   
