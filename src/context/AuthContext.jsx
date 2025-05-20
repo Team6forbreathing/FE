@@ -5,57 +5,49 @@ import Cookies from "js-cookie";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(!!Cookies.get("accessToken"));
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState({ user_name: Cookies.get("user_name") || "" });
 
-  // 초기 로드 시 토큰 유효성 검사
   useEffect(() => {
     const validateToken = async () => {
-      const token = Cookies.get("accessToken");
-      if (token) {
-        try {
-          await axios.get(import.meta.env.VITE_PROFILE_API_URL, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          setIsLoggedIn(true);
-        } catch (error) {
-          Cookies.remove("accessToken");
-          Cookies.remove("refreshToken");
-          Cookies.remove("user_name");
-          setIsLoggedIn(false);
-          setUser({ user_name: "" });
-        }
+      try {
+        // VITE_PROFILE_API_URL이 없으므로 주석 처리, 필요 시 서버 문의
+        // console.log('Validating token with URL:', import.meta.env.VITE_PROFILE_API_URL);
+        // const response = await axios.get(import.meta.env.VITE_PROFILE_API_URL, { withCredentials: true });
+        console.log("Validation skipped - No PROFILE_API_URL defined. Check with server.");
+        setIsLoggedIn(false); // 기본값으로 로그인 안 된 상태 유지
+        setUser({ user_name: Cookies.get("user_name") || "" });
+      } catch (error) {
+        console.error("Token validation failed:", error.response?.data || error.message);
+        setIsLoggedIn(false);
+        setUser({ user_name: "" });
+        Cookies.remove("user_name");
       }
     };
     validateToken();
   }, []);
 
   const login = async (email, password) => {
-    if (email === "test" && password === "1234") {
-      Cookies.set("accessToken", "dummy-token", { expires: 7, secure: true });
-      Cookies.set("refreshToken", "dummy-refresh-token", { expires: 30, secure: true });
-      Cookies.set("user_name", "Test User", { expires: 7, secure: true });
-      setIsLoggedIn(true);
-      setUser({ user_name: "Test User" });
-      return { success: true };
-    }
-
     try {
-      const response = await axios.post(import.meta.env.VITE_LOGIN_API_URL, {
-        user_id: email,
-        user_pw: password,
-      });
+      console.log('Login request to:', import.meta.env.VITE_LOGIN_API_URL);
+      const response = await axios.post(
+        import.meta.env.VITE_LOGIN_API_URL,
+        { user_id: email, user_pw: password },
+        { withCredentials: true }
+      );
+      console.log('Login response:', response.data);
 
-      const { accessToken, refreshToken, user_name } = response.data;
-      Cookies.set("accessToken", accessToken, { expires: 7, secure: true });
-      Cookies.set("refreshToken", refreshToken, { expires: 30, secure: true });
-      Cookies.set("user_name", user_name, { expires: 7, secure: true });
-
+      const user_name = response.data.user_name || Cookies.get("user_name") || "";
+      if (user_name) {
+        Cookies.set("user_name", user_name, { expires: 7, secure: true });
+        setUser({ user_name });
+      }
       setIsLoggedIn(true);
-      setUser({ user_name });
+      console.log('Login state updated, user_name:', user_name);
 
-      return { success: true };
+      return { success: true, message: response.data.message || "로그인 성공!" };
     } catch (error) {
+      console.error('Login error:', error.response?.data || error.message);
       if (error.response) {
         const { status, data } = error.response;
         if (status === 401) {
@@ -72,34 +64,28 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password, gender, age, height, weight, comp) => {
     try {
-      console.log('Register API URL:', import.meta.env.VITE_REGISTRATION_API_URL);
-      console.log('Register data:', {
-        user_id: email,
-        user_pw: password,
-        user_name: name,
-        user_gender: gender || null,
-        user_age: age || null,
-        user_height: height || null,
-        user_weight: weight || null,
-        user_comp: comp === 'true' ? true : comp === 'false' ? false : null,
-      });
-
-      const response = await axios.post(import.meta.env.VITE_REGISTRATION_API_URL, {
-        user_id: email,
-        user_pw: password,
-        user_name: name,
-        user_gender: gender || null,
-        user_age: age || null,
-        user_height: height || null,
-        user_weight: weight || null,
-        user_comp: comp === 'true' ? true : comp === 'false' ? false : null,
-      });
+      console.log('Register request to:', import.meta.env.VITE_REGISTRATION_API_URL);
+      const response = await axios.post(
+        import.meta.env.VITE_REGISTRATION_API_URL,
+        {
+          user_id: email,
+          user_pw: password,
+          user_name: name,
+          user_gender: gender || null,
+          user_age: age || null,
+          user_height: height || null,
+          user_weight: weight || null,
+          user_comp: comp === "true" ? true : comp === "false" ? false : null,
+        },
+        { withCredentials: true }
+      );
+      console.log('Register response:', response.data);
 
       return { success: true, message: response.data.message || "회원가입 성공!" };
     } catch (error) {
-      console.error('Register error:', error);
-      if (error.code === 'ERR_NETWORK') {
-        return { success: false, message: "서버에 연결할 수 없습니다. CORS 설정 또는 네트워크를 확인해주세요." };
+      console.error("Register error:", error.response?.data || error.message);
+      if (error.code === "ERR_NETWORK") {
+        return { success: false, message: "서버에 연결할 수 없습니다. 네트워크를 확인해주세요." };
       }
       if (error.response) {
         const { status, data } = error.response;
@@ -112,12 +98,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    Cookies.remove("accessToken");
-    Cookies.remove("refreshToken");
-    Cookies.remove("user_name");
-    setIsLoggedIn(false);
-    setUser({ user_name: "" });
+  const logout = async () => {
+    try {
+      // VITE_LOGOUT_API_URL이 없으므로 주석 처리, 필요 시 서버 문의
+      // console.log('Logout request to:', import.meta.env.VITE_LOGOUT_API_URL);
+      // await axios.post(import.meta.env.VITE_LOGOUT_API_URL, {}, { withCredentials: true });
+      console.log("Logout skipped - No LOGOUT_API_URL defined. Check with server.");
+      Cookies.remove("user_name");
+      setIsLoggedIn(false);
+      setUser({ user_name: "" });
+    } catch (error) {
+      console.error("Logout failed:", error.response?.data || error.message);
+      Cookies.remove("user_name");
+      setIsLoggedIn(false);
+      setUser({ user_name: "" });
+    }
   };
 
   return (
