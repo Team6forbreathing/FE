@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import Cookies from 'js-cookie';
 
 function Login() {
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState(''); // username 상태 추가
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -21,9 +21,6 @@ function Login() {
 
     const result = await login(username, password);
     if (result.success) {
-      const userNameCookie = Cookies.get('user_name');
-      console.log('Login successful - Server response:', result);
-      console.log('Current user_name cookie:', userNameCookie);
       setMessage(result.message || '로그인 성공!');
       // navigate('/dashboard'); // 디버깅용으로 주석 처리
     } else {

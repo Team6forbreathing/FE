@@ -6,22 +6,21 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState({ user_name: Cookies.get("user_name") || "" });
 
   useEffect(() => {
     const validateToken = async () => {
       try {
-        // VITE_PROFILE_API_URL이 없으므로 주석 처리, 필요 시 서버 문의
-        // console.log('Validating token with URL:', import.meta.env.VITE_PROFILE_API_URL);
-        // const response = await axios.get(import.meta.env.VITE_PROFILE_API_URL, { withCredentials: true });
         console.log("Validation skipped - No PROFILE_API_URL defined. Check with server.");
-        setIsLoggedIn(false); // 기본값으로 로그인 안 된 상태 유지
-        setUser({ user_name: Cookies.get("user_name") || "" });
+        setIsLoggedIn(false);
+        Cookies.remove("user_name"); 
+        Cookies.remove("accessToken");
+        Cookies.remove("refreshToken");
       } catch (error) {
         console.error("Token validation failed:", error.response?.data || error.message);
         setIsLoggedIn(false);
-        setUser({ user_name: "" });
         Cookies.remove("user_name");
+        Cookies.remove("accessToken");
+        Cookies.remove("refreshToken");
       }
     };
     validateToken();
@@ -35,17 +34,18 @@ export const AuthProvider = ({ children }) => {
         { user_id: email, user_pw: password },
         { withCredentials: true }
       );
-      console.log('Login response:', response.data);
 
-      const user_name = response.data.user_name || Cookies.get("user_name") || "";
-      if (user_name) {
-        Cookies.set("user_name", user_name, { expires: 7, secure: true });
-        setUser({ user_name });
+      const valid = response.data;
+      if (valid) {
+        console.log('Login successful:', valid);
       }
       setIsLoggedIn(true);
-      console.log('Login state updated, user_name:', user_name);
-
+      console.log('Login state updated, user_name:', Cookies.get('user_name'));
+      console.log('accessToken from browser:', Cookies.get('accessToken'));
+      console.log('refreshToken from browser:', Cookies.get('refreshToken'));
+      info();
       return { success: true, message: response.data.message || "로그인 성공!" };
+
     } catch (error) {
       console.error('Login error:', error.response?.data || error.message);
       if (error.response) {
@@ -100,23 +100,38 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      // VITE_LOGOUT_API_URL이 없으므로 주석 처리, 필요 시 서버 문의
-      // console.log('Logout request to:', import.meta.env.VITE_LOGOUT_API_URL);
-      // await axios.post(import.meta.env.VITE_LOGOUT_API_URL, {}, { withCredentials: true });
       console.log("Logout skipped - No LOGOUT_API_URL defined. Check with server.");
       Cookies.remove("user_name");
+      Cookies.remove("accessToken");
+      Cookies.remove("refreshToken");
       setIsLoggedIn(false);
-      setUser({ user_name: "" });
     } catch (error) {
       console.error("Logout failed:", error.response?.data || error.message);
       Cookies.remove("user_name");
+      Cookies.remove("accessToken");
+      Cookies.remove("refreshToken");
       setIsLoggedIn(false);
-      setUser({ user_name: "" });
     }
   };
 
+  const info = async () => {
+    try {
+      const response = await axios.get(import.meta.env.VITE_USER_INFO_API_URL, {
+        withCredentials: true, // 쿠키 포함 요청
+      });
+
+      console.log("User info received:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching user info:", error.response?.data || error.message);
+      return null;
+    }
+  };
+
+
+
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, login, register, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, info, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

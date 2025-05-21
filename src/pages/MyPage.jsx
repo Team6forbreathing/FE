@@ -1,17 +1,37 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/MyPage.css';
 import Header from '../components/Header';
+import { useAuth } from '../context/AuthContext';
 
 function MyPage() {
-  const user = {
-    id: 'Honggildong',
-    name: '홍길동',
-    gender: '남',
-    age: 28,
-    height: 182,
-    weight: 78,
+  const { info } = useAuth();
+  const [user, setUser] = useState({
+    id: 'N/A',
+    name: 'N/A',
+    gender: 'N/A',
+    age: 0,
+    height: 0,
+    weight: 0,
     complication: '없음',
-  };
+  });
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      const userData = await info();
+      if (userData) {
+        setUser({
+          id: userData.user_id || 'N/A',
+          name: userData.user_name || 'N/A',
+          gender: userData.user_gender === 'F' ? '여' : userData.user_gender === 'M' ? '남' : 'N/A',
+          age: userData.user_age || 0,
+          height: userData.user_height || 0,
+          weight: userData.user_weight || 0,
+          complication: userData.user_comp ? '있음' : '없음',
+        });
+      }
+    };
+    fetchUserInfo();
+  }, [info]);
 
   const dataFiles = [
     { name: 'sleep_2024-05-01.csv', url: '/files/sleep_2024-05-01.csv' },
@@ -25,7 +45,7 @@ function MyPage() {
       <div className="mypage-wrapper">
         {/* 왼쪽: 프로필 이미지 + ID */}
         <div className="left-profile-box">
-          <div className="info-title-bar">내 프로필</div> {/* 헤더 추가 */}
+          <div className="info-title-bar">내 프로필</div>
           <div className="profile-content">
             <div className="profile-icon">👤</div>
             <div className="user-id-box">
@@ -82,7 +102,6 @@ function MyPage() {
             ))}
           </ul>
         </div>
-
       </div>
     </>
   );
