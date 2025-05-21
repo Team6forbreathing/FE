@@ -63,6 +63,7 @@ jobs:
           echo "사용된 빌드 인자:"
           echo "VITE_LOGIN_API_URL=${{ secrets.VITE_LOGIN_API_URL }}"
           echo "VITE_REGISTRATION_API_URL=${{ secrets.VITE_REGISTRATION_API_URL }}"
+          echo "VITE_USER_INFO_API_URL=${{ secrets.VITE_USER_INFO_API_URL }}"
           echo "Docker 태그: ${{ secrets.DOCKER_USERNAME }}/react_image:latest"
 
       # Step 7: SSH 설정 확인
@@ -116,5 +117,6 @@ jobs:
               -p 300:5173 \
               -e VITE_LOGIN_API_URL=${{ secrets.VITE_LOGIN_API_URL }} \
               -e VITE_REGISTRATION_API_URL=${{ secrets.VITE_REGISTRATION_API_URL }} \
+              -e VITE_USER_INFO_API_URL=${{ secrets.VITE_USER_INFO_API_URL }} \
               ${{ secrets.DOCKER_USERNAME }}/react_image:latest
           '
