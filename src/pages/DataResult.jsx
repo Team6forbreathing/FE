@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import '../styles/DataResult.css';
 import Header from '../components/Header';
 import uploadIcon from '../assets/upload.png'; 
@@ -69,7 +70,7 @@ function DataResult() {
               <ul>
               {sortedFiles.map(file => (
                   <li key={file.id} className = 'file-item'>
-                    <span className="file-name">{file.name}</span>
+                    <Link to={`/Visualize/${file.name}`} className="file-name clickable">{file.name}</Link> 
                     <span className="file-user">{file.uploadedBy}</span>
                     <span className="file-date">{file.date}</span>
                     <button onClick={() => alert(`"${file.name}" 다운로드 예정`)}>다운로드</button>

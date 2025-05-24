@@ -8,6 +8,7 @@ import FindPassword from './pages/FindPassword';
 import MyPage from './pages/MyPage';
 import Guide from './pages/Guide';
 import DataResult from './pages/DataResult';
+import Visualize from './pages/Visualize';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/guide" element={<Guide />} />
         <Route path="/DataResult" element={<DataResult />} />
+        <Route path="/visualize/:filename" element={<Visualize />} />
       </Routes>
     </Router>
   );
