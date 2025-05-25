@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import '../styles/DataResult.css';
 import Header from '../components/Header';
@@ -37,6 +38,8 @@ function DataResult() {
     setSortOrder(prev => (prev === 'latest' ? 'oldest' : 'latest'));
   };
 
+  const navigate = useNavigate();
+
   return (
     <>
         <Header />
@@ -69,11 +72,23 @@ function DataResult() {
               </div>
               <ul>
               {sortedFiles.map(file => (
-                  <li key={file.id} className = 'file-item'>
-                    <Link to={`/Visualize/${file.name}`} className="file-name clickable">{file.name}</Link> 
+                  <li
+                    key={file.id}
+                    className="file-item clickable-box"
+                    // 파일 정보 함께 넘기기 
+                    onClick={() => navigate(`/visualize/${file.name}?user=${file.uploadedBy}&date=${file.date}`)}
+                  >
+                    <span className="file-name">{file.name}</span>
                     <span className="file-user">{file.uploadedBy}</span>
                     <span className="file-date">{file.date}</span>
-                    <button onClick={() => alert(`"${file.name}" 다운로드 예정`)}>다운로드</button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); // 부모 클릭 막기
+                        alert(`"${file.name}" 다운로드 예정`);
+                      }}
+                    >
+                      다운로드
+                    </button>
                   </li>
               ))}
               </ul>
