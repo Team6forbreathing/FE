@@ -1,7 +1,7 @@
 import { useParams, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Chart from 'react-apexcharts'; 
-import '../styles/visualize.css';
+import '../styles/Visualize.css';
 import Header from '../components/Header';
 import downloadIcon from '../assets/download.png';
 
