@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom';
 import '../styles/Header.css';
 import apnealogo from '../assets/apnea-logo.png';
+import { useAuth } from '../context/AuthContext';
 
 function Header() {
+  const { isLoggedIn, logout } = useAuth();
+
   return (
     <header className="header">
       <div className="nav-left">
@@ -15,8 +18,14 @@ function Header() {
         </nav>
       </div>
       <div className="nav-right">
-        <Link to="/Login"><button className="btn-outline">Sign in</button></Link>
-        <Link to="/SignUp"><button className="btn-solid">Register</button></Link>
+        {isLoggedIn ? (
+          <button className="btn-outline" onClick={logout}>Logout</button>
+        ) : (
+          <>
+            <Link to="/Login"><button className="btn-outline">Sign in</button></Link>
+            <Link to="/SignUp"><button className="btn-solid">Register</button></Link>
+          </>
+        )}
       </div>
     </header>
   );
