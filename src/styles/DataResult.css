@@ -1,6 +1,6 @@
 .data-result-page {
     /* max-width: 700px; */
-    width : 80%;
+    width : 60%;
     margin: 50px auto 10px;
     padding: 40px;  
     background-color: #1e1e1e;
@@ -120,7 +120,6 @@
   }
 
   .file-name {
-    flex: 2;
     font-weight: bold;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -128,20 +127,18 @@
   }
 
   .file-user {
-    flex: 1;
     text-align: center;
     color: #ccc;
   }
 
   .file-date {
-    flex: 1;
     text-align: center;
     color: #ccc;
   }
 
   .sort-toggle {
-  text-align: left;
-  margin-bottom: 20px;
+    text-align: left;
+    margin-bottom: 20px;
   }
 
   .sort-toggle button {
@@ -164,4 +161,22 @@
     /* background-color: #be3131; 색은 둘중에 하나로 결정 가능  */
     background-color: #6c3cc9; 
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  }
+
+  .date-filter {
+    display: flex;
+    gap: 50px;
+    align-items: center;
+    justify-content: flex-end;
+    margin: 16px 0;
+  }
+
+  .date-filter label {
+    font-size: 16px;
+    color: white;
+  }
+
+  .date-filter input[type='date'] {
+    margin-left: 8px;
+    padding: 5px;
   }

@@ -39,7 +39,61 @@
   transform: scale(1.3);
 }
 
+
+/* List */
+.file-table-list {
+  margin: 30px 0;
+  overflow-x: auto;
+  display: flex;
+  justify-content: center;
+}
+
+.file-table {
+  width: 80%;
+  border-collapse: collapse;
+  background: #1e1e1e;
+  color: #eee;
+}
+
+.file-table th, .file-table td {
+  padding: 8px 16px;
+  border-bottom: 1px solid #333;
+  text-align: center;
+  font-size : 14px;
+}
+
+
+.file-table th {
+  background-color: #2d2d2d;
+  font-weight: bold;
+  color: #ccc;
+  font-size: 16px;
+  
+}
+
+.file-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.file-download-button {
+  background-color: #7c3aed;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.file-download-button:hover {
+  background-color: #6d28d9;
+}
+
+/*  */
 .chart-wrapper {
+  margin-top: 100px;
   display: grid;
   grid-template-columns: repeat(2, 1fr); 
   gap: 16px;

@@ -3,20 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import '../styles/DataResult.css';
 import Header from '../components/Header';
-import uploadIcon from '../assets/upload.png'; 
+import uploadIcon from '../assets/upload.png';
 
 function DataResult() {
   const [selectedFile, setSelectedFile] = useState(null);
-
   const [sortOrder, setSortOrder] = useState('latest'); // 'latest' or 'oldest'
-  const uploadedFiles = [
-    { id: 1, name: 'a.csv', uploadedBy: 'user1',date: '2025-05-01',},
-    { id: 2, name: 'b.csv', uploadedBy: 'user2',date: '2025-05-02',},
-    { id: 3, name: 'c.csv', uploadedBy: 'user3',date: '2025-05-03',},
-    { id: 4, name: 'd.csv', uploadedBy: 'user4',date: '2025-05-07',},
-  ];
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
-  
+  const uploadedFiles = [
+    { id: 1, name: 'a.csv', uploadedBy: 'user1', date: '2025-05-01' },
+    { id: 2, name: 'b.csv', uploadedBy: 'user2', date: '2025-05-02' },
+    { id: 3, name: 'c.csv', uploadedBy: 'user3', date: '2025-05-03' },
+    { id: 4, name: 'd.csv', uploadedBy: 'user4', date: '2025-05-07' },
+  ];
 
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
@@ -29,77 +29,107 @@ function DataResult() {
     }
   };
 
+  const toggleSortOrder = () => {
+    setSortOrder((prev) => (prev === 'latest' ? 'oldest' : 'latest'));
+  };
 
-  const sortedFiles = [...uploadedFiles].sort((a, b) =>
+  const navigate = useNavigate();
+
+  // 날짜 필터링된 파일 목록 생성
+  const filteredFiles = uploadedFiles.filter((file) => {
+    const fileDate = new Date(file.date);
+    const start = startDate ? new Date(startDate) : null;
+    const end = endDate ? new Date(endDate) : null;
+
+    if (start && fileDate < start) return false;
+    if (end && fileDate > end) return false;
+    return true;
+  });
+
+  // 정렬된 + 필터링된 파일 목록
+  const sortedFiles = [...filteredFiles].sort((a, b) =>
     sortOrder === 'latest'
       ? new Date(b.date) - new Date(a.date)
       : new Date(a.date) - new Date(b.date)
   );
 
-  const toggleSortOrder = () => {
-    setSortOrder(prev => (prev === 'latest' ? 'oldest' : 'latest'));
-  };
-
-  const navigate = useNavigate();
-
   return (
     <>
-        <Header />
-        <main className = "data-main">
-          <section className="data-result-page">
+      <Header />
+      <main className="data-main">
+        <section className="data-result-page">
           <h2>Data File List</h2>
 
           <form onSubmit={handleUpload} className="upload-form">
-              <input
+            <input
               type="file"
               id="fileUpload"
               onChange={handleFileChange}
               style={{ display: 'none' }}
-              />
-              <label htmlFor="fileUpload" className="upload-icon-label">
+            />
+            <label htmlFor="fileUpload" className="upload-icon-label">
               <img src={uploadIcon} alt="파일 업로드" />
-              </label>
-              <span className="file-name">
+            </label>
+            <span className="file-name">
               {selectedFile ? selectedFile.name : '선택된 파일 없음'}
-              </span>
-              <button type="submit" className="upload-button">파일 업로드</button>
+            </span>
+            <button type="submit" className="upload-button">
+              파일 업로드
+            </button>
           </form>
 
+          {/* 날짜 검색창 */}
+          <div className="date-filter">
+            <label>
+              시작일:
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </label>
+            <label>
+              종료일:
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </label>
+          </div>
+
           <div className="file-list">
-              <h3>업로드된 파일 목록</h3>
-              <div className="sort-toggle">
-                <button onClick={toggleSortOrder}>
-                  {sortOrder === 'latest' ? '최신순' : '오래된순'}
-                </button>
-              </div>
-              <ul>
-              {sortedFiles.map(file => (
+            <h3>업로드된 파일 목록</h3>
+            <div className="sort-toggle">
+              <button onClick={toggleSortOrder}>
+                {sortOrder === 'latest' ? '최신순' : '오래된순'}
+              </button>
+            </div>
+            <ul>
+              {sortedFiles.length > 0 ? (
+                sortedFiles.map((file) => (
                   <li
                     key={file.id}
                     className="file-item clickable-box"
-                    // 파일 정보 함께 넘기기 
-                    onClick={() => navigate(`/visualize/${file.name}?user=${file.uploadedBy}&date=${file.date}`)}
+                    onClick={() =>
+                      navigate(
+                        `/visualize/${file.name}?user=${file.uploadedBy}&date=${file.date}`
+                      )
+                    }
                   >
-                    <span className="file-name">{file.name}</span>
+                    <span className="file-name">{file.date}</span>
                     <span className="file-user">{file.uploadedBy}</span>
-                    <span className="file-date">{file.date}</span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation(); // 부모 클릭 막기
-                        alert(`"${file.name}" 다운로드 예정`);
-                      }}
-                    >
-                      다운로드
-                    </button>
                   </li>
-              ))}
-              </ul>
+                ))
+              ) : (
+                <p>해당 날짜 범위의 파일이 없습니다.</p>
+              )}
+            </ul>
           </div>
-          </section>
-        </main>
+        </section>
+      </main>
     </>
   );
 }
 
 export default DataResult;
-
