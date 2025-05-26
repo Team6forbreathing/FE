@@ -1,53 +1,103 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode"; 
 
 const AuthContext = createContext();
 
+const isTokenExpired = (token) => {
+  if (!token) {
+    console.log("No token found in cookies.");
+    return true;
+  }
+  try {
+    const decoded = jwtDecode(token);
+    const currentTime = Math.floor(Date.now() / 1000);
+    console.log("Token expiration check:", { exp: decoded.exp, currentTime });
+    return decoded.exp < currentTime;
+  } catch (error) {
+    console.error("Invalid token format:", error.message);
+    return true;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const validateToken = async () => {
-      try {
-        console.log("Validation skipped - No PROFILE_API_URL defined. Check with server.");
-        setIsLoggedIn(false);
-        Cookies.remove("user_name"); 
-        Cookies.remove("accessToken");
-        Cookies.remove("refreshToken");
-      } catch (error) {
-        console.error("Token validation failed:", error.response?.data || error.message);
+      console.log("Starting token validation...");
+      const accessToken = Cookies.get("accessToken");
+
+      if (!accessToken || isTokenExpired(accessToken)) {
+        console.log("Token missing or expired. Logging out...");
         setIsLoggedIn(false);
         Cookies.remove("user_name");
         Cookies.remove("accessToken");
         Cookies.remove("refreshToken");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        if (!import.meta.env.VITE_PROFILE_API_URL) {
+          console.error("VITE_PROFILE_API_URL is not defined in .env");
+          setIsLoggedIn(false);
+          setIsLoading(false);
+          return;
+        }
+
+        console.log("Validating token with server:", import.meta.env.VITE_PROFILE_API_URL);
+        const response = await axios.get(import.meta.env.VITE_PROFILE_API_URL, {
+          withCredentials: true,
+        });
+
+        console.log("Server validation response:", response.data);
+        if (response.data.valid) {
+          console.log("Token is valid. User is logged in.");
+          setIsLoggedIn(true);
+        } else {
+          console.log("Server says token is invalid. Logging out...");
+          setIsLoggedIn(false);
+          Cookies.remove("user_name");
+          Cookies.remove("accessToken");
+          Cookies.remove("refreshToken");
+        }
+      } catch (error) {
+        console.error("Token validation error:", error.response?.data || error.message);
+        setIsLoggedIn(false);
+        Cookies.remove("user_name");
+        Cookies.remove("accessToken");
+        Cookies.remove("refreshToken");
+      } finally {
+        console.log("Token validation completed. Setting isLoading to false.");
+        setIsLoading(false);
       }
     };
+
     validateToken();
   }, []);
 
   const login = async (email, password) => {
     try {
-      console.log('Login request to:', import.meta.env.VITE_LOGIN_API_URL);
+      console.log("Login request to:", import.meta.env.VITE_LOGIN_API_URL);
       const response = await axios.post(
         import.meta.env.VITE_LOGIN_API_URL,
         { user_id: email, user_pw: password },
         { withCredentials: true }
       );
 
-      const valid = response.data;
-      if (valid) {
-        console.log('Login successful:', valid);
-      }
+      console.log("Login response:", response.data);
       setIsLoggedIn(true);
-      console.log('Login state updated, user_name:', Cookies.get('user_name'));
-      console.log('accessToken from browser:', Cookies.get('accessToken'));
-      console.log('refreshToken from browser:', Cookies.get('refreshToken'));
-      info();
-      return { success: true, message: response.data.message || "로그인 성공!" };
+      console.log("Login state updated, user_name:", Cookies.get("user_name"));
+      console.log("accessToken:", Cookies.get("accessToken"));
+      console.log("refreshToken:", Cookies.get("refreshToken"));
 
+      await info();
+      return { success: true, message: response.data.message || "로그인 성공!" };
     } catch (error) {
-      console.error('Login error:', error.response?.data || error.message);
+      console.error("Login error:", error.response?.data || error.message);
       if (error.response) {
         const { status, data } = error.response;
         if (status === 401) {
@@ -64,7 +114,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password, gender, age, height, weight, comp) => {
     try {
-      console.log('Register request to:', import.meta.env.VITE_REGISTRATION_API_URL);
+      console.log("Register request to:", import.meta.env.VITE_REGISTRATION_API_URL);
       const response = await axios.post(
         import.meta.env.VITE_REGISTRATION_API_URL,
         {
@@ -79,7 +129,7 @@ export const AuthProvider = ({ children }) => {
         },
         { withCredentials: true }
       );
-      console.log('Register response:', response.data);
+      console.log("Register response:", response.data);
 
       return { success: true, message: response.data.message || "회원가입 성공!" };
     } catch (error) {
@@ -100,13 +150,13 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      console.log("Logout skipped - No LOGOUT_API_URL defined. Check with server.");
+      console.log("Logout skipped - No LOGOUT_API_URL defined.");
       Cookies.remove("user_name");
       Cookies.remove("accessToken");
       Cookies.remove("refreshToken");
       setIsLoggedIn(false);
     } catch (error) {
-      console.error("Logout failed:", error.response?.data || error.message);
+      console.error("Logout error:", error.response?.data || error.message);
       Cookies.remove("user_name");
       Cookies.remove("accessToken");
       Cookies.remove("refreshToken");
@@ -116,8 +166,9 @@ export const AuthProvider = ({ children }) => {
 
   const info = async () => {
     try {
+      console.log("Fetching user info from:", import.meta.env.VITE_USER_INFO_API_URL);
       const response = await axios.get(import.meta.env.VITE_USER_INFO_API_URL, {
-        withCredentials: true, // 쿠키 포함 요청
+        withCredentials: true,
       });
 
       console.log("User info received:", response.data);
@@ -128,10 +179,8 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-
-
   return (
-    <AuthContext.Provider value={{ isLoggedIn, info, login, register, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, isLoading, info, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
