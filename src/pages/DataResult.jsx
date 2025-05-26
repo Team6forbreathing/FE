@@ -14,9 +14,6 @@ function DataResult() {
     { id: 2, name: 'b.csv', uploadedBy: 'user2',date: '2025-05-02',},
     { id: 3, name: 'c.csv', uploadedBy: 'user3',date: '2025-05-03',},
     { id: 4, name: 'd.csv', uploadedBy: 'user4',date: '2025-05-07',},
-    { id: 5, name: 'e.csv', uploadedBy: 'user5',date: '2025-05-14',},
-    { id: 6, name: 'f.csv', uploadedBy: 'user6',date: '2025-05-19',},
-    { id: 7, name: 'g.csv', uploadedBy: 'user7',date: '2025-05-23',},
   ];
 
   const handleFileChange = (e) => {
