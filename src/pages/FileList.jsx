@@ -43,7 +43,7 @@ function FileList() {
       <Header />
 
       <div className="visualize-container">
-        <h2>Data File List</h2>
+        <p>{date}에 측정된 수면 데이터 파일입니다. </p>
 
         <div className="visualize-meta">
           <p>업로더: {user}</p>
