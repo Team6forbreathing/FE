@@ -1,4 +1,4 @@
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Chart from 'react-apexcharts';
 import '../styles/FileList.css';
@@ -9,6 +9,7 @@ function FileList() {
   const { filename } = useParams();
   const [data, setData] = useState([]);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const searchParams = new URLSearchParams(location.search);
   const user = searchParams.get('user');
@@ -44,6 +45,7 @@ function FileList() {
 
       <div className="visualize-container">
         <p>{date}에 측정된 수면 데이터 파일입니다. </p>
+        <p>파일 이름을 클릭하면, 관련 시각화 자료를 볼 수 있습니다. </p>
 
         <div className="visualize-meta">
           <p>업로더: {user}</p>
@@ -60,8 +62,16 @@ function FileList() {
             </thead>
             <tbody>
               {fileList.map((file, idx) => (
+
                 <tr key={idx}>
-                  <td>
+                  <td
+                    onClick={() =>
+                      navigate(`/visualize/${file.name}?user=${user}&date=${date}`, {
+                        state: { backgroundLocation: location },
+                      })
+                    }
+                    className="file-name-cell"
+                  >
                     {file.name}
                   </td>
                   <td>
