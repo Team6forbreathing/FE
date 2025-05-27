@@ -7,8 +7,8 @@ import FindID from './pages/FindID';
 import FindPassword from './pages/FindPassword';
 import MyPage from './pages/MyPage';
 import Guide from './pages/Guide';
-import DataResult from './pages/DataResult';
-import Visualize from './pages/Visualize';
+import Data from './pages/Data';
+import FileList from './pages/FileList';
 
 function App() {
   return (
@@ -21,8 +21,8 @@ function App() {
         <Route path="/findpassword" element={<FindPassword />} />
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/guide" element={<Guide />} />
-        <Route path="/DataResult" element={<DataResult />} />
-        <Route path="/visualize/:filename" element={<Visualize />} />
+        <Route path="/Data" element={<Data />} />
+        <Route path="/FileList/:filename" element={<FileList />} />
       </Routes>
     </Router>
   );

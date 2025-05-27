@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import '../styles/DataResult.css';
+import '../styles/Data.css';
 import Header from '../components/Header';
 import uploadIcon from '../assets/upload.png';
 
-function DataResult() {
+function Data() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [sortOrder, setSortOrder] = useState('latest'); // 'latest' or 'oldest'
   const [startDate, setStartDate] = useState('');
@@ -113,7 +113,7 @@ function DataResult() {
                     className="file-item clickable-box"
                     onClick={() =>
                       navigate(
-                        `/visualize/${file.name}?user=${file.uploadedBy}&date=${file.date}`
+                        `/FileList/${file.name}?user=${file.uploadedBy}&date=${file.date}`
                       )
                     }
                   >
@@ -132,4 +132,4 @@ function DataResult() {
   );
 }
 
-export default DataResult;
+export default Data;

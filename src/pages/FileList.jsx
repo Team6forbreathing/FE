@@ -1,11 +1,11 @@
 import { useParams, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Chart from 'react-apexcharts';
-import '../styles/Visualize.css';
+import '../styles/FileList.css';
 import Header from '../components/Header';
 import downloadIcon from '../assets/download.png';
 
-function VisualizePage() {
+function FileList() {
   const { filename } = useParams();
   const [data, setData] = useState([]);
   const location = useLocation();
@@ -43,7 +43,7 @@ function VisualizePage() {
       <Header />
 
       <div className="visualize-container">
-        <h2>Data visualization</h2>
+        <h2>Data File List</h2>
 
         <div className="visualize-meta">
           <p>업로더: {user}</p>
@@ -87,4 +87,4 @@ function VisualizePage() {
   );
 }
 
-export default VisualizePage;
+export default FileList;
