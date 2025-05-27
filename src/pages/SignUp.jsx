@@ -100,53 +100,53 @@ function SignUp() {
 
   return (
     <>
-    <Header />
-    <div className="signup-wrapper">
-      <form className="signup-box" onSubmit={handleSubmit}>
-        <h2>Sign Up</h2>   
-        <h5>*은 필수 입력 항목입니다.</h5>
+      <Header />
+      <div className="signup-wrapper">
+        <form className="signup-box" onSubmit={handleSubmit}>
+          <h2>Sign Up</h2>
+          <h5>*은 필수 입력 항목입니다.</h5>
 
-        <label>이름* <input name="name" type="text" value={formData.name} onChange={handleChange} required /></label>
+          <label>이름* <input name="name" type="text" value={formData.name} onChange={handleChange} required /></label>
 
-        <label>성별
-          <select name="gender" value={formData.gender} onChange={handleChange}>
-            <option value="">선택</option>
-            <option value="M">남</option>
-            <option value="F">여</option>
-            <option value="O">기타</option>
-          </select>
-        </label>
+          <label>성별
+            <select name="gender" value={formData.gender} onChange={handleChange}>
+              <option value="">선택</option>
+              <option value="M">남</option>
+              <option value="F">여</option>
+              <option value="O">기타</option>
+            </select>
+          </label>
 
-        <label>아이디* <input name="username" type="text" value={formData.username} onChange={handleChange} required /></label>
+          <label>아이디* <input name="username" type="text" value={formData.username} onChange={handleChange} required /></label>
 
-        <label>비밀번호* <input name="password" type="password" value={formData.password} onChange={handleChange} required /></label>
+          <label>비밀번호* <input name="password" type="password" value={formData.password} onChange={handleChange} required /></label>
 
-        <label>비밀번호 확인* <input name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} required /></label>
+          <label>비밀번호 확인* <input name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} required /></label>
 
-        <label>키(cm) <input name="height" type="number" step="0.1" value={formData.height} onChange={handleChange} /></label>
+          <label>키(cm) <input name="height" type="number" step="0.1" value={formData.height} onChange={handleChange} /></label>
 
-        <label>몸무게(kg) <input name="weight" type="number" step="0.1" value={formData.weight} onChange={handleChange} /></label>
+          <label>몸무게(kg) <input name="weight" type="number" step="0.1" value={formData.weight} onChange={handleChange} /></label>
 
-        <label>나이 <input name="age" type="number" value={formData.age} onChange={handleChange} /></label>
+          <label>나이 <input name="age" type="number" value={formData.age} onChange={handleChange} /></label>
 
-        <label>합병증 유무
-          <select name="complication" value={formData.complication} onChange={handleChange}>
-            <option value="">선택</option>
-            <option value="true">있음</option>
-            <option value="false">없음</option>
-            <option value="false">모름</option>
-          </select>
-        </label>
+          <label>합병증 유무
+            <select name="complication" value={formData.complication} onChange={handleChange}>
+              <option value="">선택</option>
+              <option value="true">있음</option>
+              <option value="false">없음</option>
+              <option value="false">모름</option>
+            </select>
+          </label>
 
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? '처리 중...' : '회원가입'}
-        </button>
+          <button type="submit" disabled={isLoading}>
+            {isLoading ? '처리 중...' : '회원가입'}
+          </button>
 
-        <div className="login-link">
-          이미 계정이 있으신가요? <Link to="/Login">로그인</Link>
-        </div>
-      </form>
-    </div>
+          <div className="login-link">
+            이미 계정이 있으신가요? <Link to="/Login">로그인</Link>
+          </div>
+        </form>
+      </div>
     </>
   );
 }

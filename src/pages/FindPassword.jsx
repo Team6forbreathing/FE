@@ -16,23 +16,23 @@ function FindPassword() {
 
   return (
     <>
-    <Header />
-    <div className="find-wrapper">
-      <form className="find-box" onSubmit={handleFindPassword}>
-        <h2>Find Password</h2>
-        <label>아이디
-          <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
-        </label>
-        <label>이메일
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        </label>
-        <button type="submit">비밀번호 찾기</button>
+      <Header />
+      <div className="find-wrapper">
+        <form className="find-box" onSubmit={handleFindPassword}>
+          <h2>Find Password</h2>
+          <label>아이디
+            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
+          </label>
+          <label>이메일
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          </label>
+          <button type="submit">비밀번호 찾기</button>
 
-        <div className="back-link">
-          <Link to="/Login">로그인으로 돌아가기</Link>
-        </div>
-      </form>
-    </div>
+          <div className="back-link">
+            <Link to="/Login">로그인으로 돌아가기</Link>
+          </div>
+        </form>
+      </div>
     </>
   );
 }

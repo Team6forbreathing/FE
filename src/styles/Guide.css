@@ -9,11 +9,15 @@
   padding-bottom: 8px;
   width: fit-content;
 }
+
 .webguide-container {
-  display: flex; /* 요소들 가로 방향으로 정렬 */
+  display: flex;
+  /* 요소들 가로 방향으로 정렬 */
   justify-content: center;
-  gap: 35px; /* 요소들 사이의 간격 */
-  margin-top: 50px; /* 위쪽여백 */
+  gap: 35px;
+  /* 요소들 사이의 간격 */
+  margin-top: 50px;
+  /* 위쪽여백 */
   padding-bottom: 50px;
 }
 
@@ -54,15 +58,22 @@
   margin-top: 50px;
   margin-left: 50px;
   color: White;
-  border-bottom: 2px solid #333; /* 글자 밑에 밑줄줄 (두께 2px, 색상 짙은 회색) */
-  padding-bottom: 8px; /* 선과 텍스트 사이 여백 */
-  width: fit-content; /* 선 길이를 텍스트 너비만큼 */
+  border-bottom: 2px solid #333;
+  /* 글자 밑에 밑줄줄 (두께 2px, 색상 짙은 회색) */
+  padding-bottom: 8px;
+  /* 선과 텍스트 사이 여백 */
+  width: fit-content;
+  /* 선 길이를 텍스트 너비만큼 */
 }
+
 .guide-container {
-  display: flex; /* 요소들 가로 방향으로 정렬 */
+  display: flex;
+  /* 요소들 가로 방향으로 정렬 */
   justify-content: center;
-  gap: 35px; /* 요소들 사이의 간격 */
-  margin-top: 50px; /* 위쪽여백 */
+  gap: 35px;
+  /* 요소들 사이의 간격 */
+  margin-top: 50px;
+  /* 위쪽여백 */
   padding-bottom: 50px;
 
 }

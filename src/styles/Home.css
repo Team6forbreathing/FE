@@ -17,7 +17,7 @@
   margin-bottom: 40px;
 }
 
-.description p{
+.description p {
   color: #ccc;
   max-width: 100%;
   margin: 16px auto 32px auto;
@@ -55,8 +55,9 @@
 }
 
 .cta {
-  margin-top: 150px; 
+  margin-top: 150px;
 }
+
 .cta h2 {
   margin-bottom: 20px;
 }
@@ -70,5 +71,3 @@
   font-weight: bold;
   cursor: pointer;
 }
-
-  

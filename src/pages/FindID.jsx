@@ -16,23 +16,23 @@ function FindID() {
 
   return (
     <>
-    <Header />
-    <div className="find-wrapper">
-      <form className="find-box" onSubmit={handleFindID}>
-        <h2>Find ID</h2>
-        <label>이름
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
-        </label>
-        <label>이메일
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        </label>
-        <button type="submit">아이디 찾기</button>
+      <Header />
+      <div className="find-wrapper">
+        <form className="find-box" onSubmit={handleFindID}>
+          <h2>Find ID</h2>
+          <label>이름
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+          </label>
+          <label>이메일
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          </label>
+          <button type="submit">아이디 찾기</button>
 
-        <div className="back-link">
-          <Link to="/Login">로그인으로 돌아가기</Link>
-        </div>
-      </form>
-    </div>
+          <div className="back-link">
+            <Link to="/Login">로그인으로 돌아가기</Link>
+          </div>
+        </form>
+      </div>
     </>
   );
 }

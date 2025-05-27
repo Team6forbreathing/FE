@@ -6,7 +6,7 @@
   padding: 120px 40px;
   background-color: #1e1e1e;
   height: 100vh;
-    
+
 }
 
 .left-profile-box,
@@ -40,7 +40,7 @@
 
 
 .profile-title-bar {
-  background-color: #9b59b6; 
+  background-color: #9b59b6;
   color: white;
   padding: 14px 18px;
   font-size: 16px;
@@ -75,17 +75,17 @@
 
 /* 2번 테이블 스타일 */
 .right-info-box {
-  width: 360px; 
-  padding: 0; 
+  width: 360px;
+  padding: 0;
   background-color: #e9dff3;
   border-radius: 16px;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden; 
+  overflow: hidden;
   height: 50vh;
 }
 
 .info-title-bar {
-  background-color: #9b59b6; 
+  background-color: #9b59b6;
   color: white;
   padding: 14px 18px;
   font-size: 16px;
@@ -131,17 +131,17 @@ td {
 
 /* 3번 박스 스타일 */
 .download-box {
-  width: 360px; 
-  padding: 0; 
+  width: 360px;
+  padding: 0;
   background-color: #e9dff3;
   border-radius: 16px;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden; 
+  overflow: hidden;
   height: 50vh;
 }
 
 .download-title-bar {
-  background-color: #9b59b6; 
+  background-color: #9b59b6;
   color: white;
   padding: 14px 18px;
   font-size: 16px;
@@ -152,9 +152,9 @@ td {
 .download-description {
   font-size: 14px;
   color: #555;
-  margin-top : 20px;
+  margin-top: 20px;
   margin-bottom: 40px;
-  margin-left : 10px;
+  margin-left: 10px;
 }
 
 .file-list {
@@ -188,4 +188,3 @@ td {
 .file-download-btn:hover {
   background-color: #7a3ea8;
 }
-

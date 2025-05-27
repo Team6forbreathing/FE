@@ -16,16 +16,16 @@ function VisualizePage() {
 
   // 예시 파일 리스트
   const fileList = [
-    { name: 'PPG_0.csv'},
-    { name: 'ACC_0.csv'},
-    { name: 'PPG_1.csv'},
-    { name: 'ACC_1.csv'},
-    { name: 'PPG_2.csv'},
-    { name: 'ACC_2.csv'},
-    { name: 'PPG_3.csv'},
-    { name: 'ACC_3.csv'},
-    { name: 'PPG_4.csv'},
-    { name: 'ACC_4.csv'},
+    { name: 'PPG_0.csv' },
+    { name: 'ACC_0.csv' },
+    { name: 'PPG_1.csv' },
+    { name: 'ACC_1.csv' },
+    { name: 'PPG_2.csv' },
+    { name: 'ACC_2.csv' },
+    { name: 'PPG_3.csv' },
+    { name: 'ACC_3.csv' },
+    { name: 'PPG_4.csv' },
+    { name: 'ACC_4.csv' },
   ];
 
   useEffect(() => {
