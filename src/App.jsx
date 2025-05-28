@@ -27,7 +27,7 @@ function AppRoutes() {
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/guide" element={<Guide />} />
         <Route path="/Data" element={<Data />} />
-        <Route path="/FileList/:filename" element={<FileList />} />
+        <Route path="/FileList" element={<FileList />} />
       </Routes>
 
       {/* 모달로 뜨는 경우 */}

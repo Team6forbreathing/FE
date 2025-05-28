@@ -131,7 +131,7 @@ td {
 
 /* 3번 박스 스타일 */
 .download-box {
-  width: 360px;
+  width: 460px;
   padding: 0;
   background-color: #e9dff3;
   border-radius: 16px;
@@ -151,40 +151,47 @@ td {
 
 .download-description {
   font-size: 14px;
+  font-weight: 600;
   color: #555;
   margin-top: 20px;
   margin-bottom: 40px;
-  margin-left: 10px;
+  margin-left: 15px;
 }
 
 .file-list {
   list-style: none;
   padding: 0;
-  margin-left: 10px;
-  margin-right: 10px;
+  margin: 0 30px;
+  gap: 10px;
 }
 
 .file-item {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  padding: 10px 0;
-  font-size: 14px;
-  border-bottom: 1px solid #ddd;
-  color: #333;
-}
-
-.file-download-btn {
-  background-color: #9b59b6;
+  height: 48px;
+  background-color: #2e2e2e;
   color: white;
-  padding: 6px 12px;
-  border-radius: 6px;
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: bold;
-  transition: background-color 0.2s ease;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, background-color 0.2s ease;
 }
 
-.file-download-btn:hover {
-  background-color: #7a3ea8;
+.file-item:hover {
+  transform: scale(1.02);
+  background-color: #6c3cc9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.file-item span {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.file-item p {
+  font-size: 14px;
+  font-weight: bold;
 }

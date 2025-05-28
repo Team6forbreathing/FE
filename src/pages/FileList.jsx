@@ -1,13 +1,10 @@
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import Chart from 'react-apexcharts';
 import '../styles/FileList.css';
 import Header from '../components/Header';
 import downloadIcon from '../assets/download.png';
 
 function FileList() {
-  const { filename } = useParams();
-  const [data, setData] = useState([]);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -29,23 +26,13 @@ function FileList() {
     { name: 'ACC_4.csv' },
   ];
 
-  useEffect(() => {
-    fetch(`/files/${filename}`)
-      .then(res => res.text())
-      .then(text => {
-        const lines = text.split('\n').filter(Boolean);
-        const parsed = lines.map(line => line.split(','));
-        setData(parsed);
-      });
-  }, [filename]);
-
   return (
     <>
       <Header />
 
       <div className="visualize-container">
-        <p>{date}에 측정된 수면 데이터 파일입니다. </p>
-        <p>파일 이름을 클릭하면, 관련 시각화 자료를 볼 수 있습니다. </p>
+        <p>{date}에 측정된 수면 데이터 파일입니다.</p>
+        <p>파일 이름을 클릭하면, 관련 시각화 자료를 볼 수 있습니다.</p>
 
         <div className="visualize-meta">
           <p>업로더: {user}</p>
@@ -62,7 +49,6 @@ function FileList() {
             </thead>
             <tbody>
               {fileList.map((file, idx) => (
-
                 <tr key={idx}>
                   <td
                     onClick={() =>
@@ -71,11 +57,17 @@ function FileList() {
                       })
                     }
                     className="file-name-cell"
+                    style={{ cursor: 'pointer' }}
                   >
                     {file.name}
                   </td>
                   <td>
-                    <a href={`/files/${file.name}`} download className="download-icon-btn">
+                    <a
+                      href={`/files/${file.name}`}
+                      download
+                      className="download-icon-btn"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <img src={downloadIcon} alt="다운로드" />
                     </a>
                   </td>
@@ -84,7 +76,6 @@ function FileList() {
             </tbody>
           </table>
         </div>
-
 
         <div className="chart-wrapper">
           <div>{/* chart 1 */}</div>

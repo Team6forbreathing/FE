@@ -158,7 +158,6 @@
 
 .clickable-box:hover {
   transform: scale(1.02);
-  /* background-color: #be3131; 색은 둘중에 하나로 결정 가능  */
   background-color: #6c3cc9;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }

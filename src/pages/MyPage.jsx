@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/MyPage.css';
 import Header from '../components/Header';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +15,8 @@ function MyPage() {
     weight: 0,
     complication: '없음',
   });
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -46,10 +49,10 @@ function MyPage() {
     fetchUserInfo();
   }, [info, isLoggedIn]); // Added isLoggedIn to dependencies
 
-  const dataFiles = [
-    { name: 'sleep_2024-05-01.csv', url: '/files/sleep_2024-05-01.csv' },
-    { name: 'sleep_2024-05-07.csv', url: '/files/sleep_2024-05-07.csv' },
-    { name: 'sleep_2024-05-13.csv', url: '/files/sleep_2024-05-13.csv' },
+  const uploadedFiles = [
+    { id: 1, uploadedBy: 'user1', date: '2025-03-13' },
+    { id: 2, uploadedBy: 'user1', date: '2025-04-05' },
+    { id: 3, uploadedBy: 'user1', date: '2025-05-18' },
   ];
 
   return (
@@ -102,18 +105,25 @@ function MyPage() {
 
         <div className="download-box">
           <div className="download-title-bar">수면 데이터 다운로드</div>
-          <p className="download-description">업로드한 수면 데이터를 확인하고 개별 다운로드할 수 있습니다.</p>
+          <p className="download-description">
+            최근 수면 기록 3건을 지금 확인하고 다운로드하세요.<br></br>
+            원하는 날짜를 클릭하면, 당일 업로드 된 수면 데이터 파일을 확인할 수 있습니다.
+          </p>
 
           <ul className="file-list">
-            {dataFiles.map((file, index) => (
-              <li key={index} className="file-item">
-                <span>📄 {file.name}</span>
-                <a className="file-download-btn" href={file.url} download>
-                  다운로드
-                </a>
+            {uploadedFiles.map((file, index) => (
+              <li
+                key={index}
+                className="file-item"
+                onClick={() =>
+                  navigate(`/FileList?user=${file.uploadedBy}&date=${file.date}`)
+                }
+              >
+                <span>📄 <p>{file.date}</p></span>
               </li>
             ))}
           </ul>
+
         </div>
       </div>
     </>

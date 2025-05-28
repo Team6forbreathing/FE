@@ -12,10 +12,10 @@ function Data() {
   const [endDate, setEndDate] = useState('');
 
   const uploadedFiles = [
-    { id: 1, name: 'a.csv', uploadedBy: 'user1', date: '2025-05-01' },
-    { id: 2, name: 'b.csv', uploadedBy: 'user2', date: '2025-05-02' },
-    { id: 3, name: 'c.csv', uploadedBy: 'user3', date: '2025-05-03' },
-    { id: 4, name: 'd.csv', uploadedBy: 'user4', date: '2025-05-07' },
+    { id: 1, uploadedBy: 'user1', date: '2025-05-01' },
+    { id: 2, uploadedBy: 'user2', date: '2025-05-02' },
+    { id: 3, uploadedBy: 'user3', date: '2025-05-03' },
+    { id: 4, uploadedBy: 'user4', date: '2025-05-07' },
   ];
 
   const handleFileChange = (e) => {
@@ -113,7 +113,7 @@ function Data() {
                     className="file-item clickable-box"
                     onClick={() =>
                       navigate(
-                        `/FileList/${file.name}?user=${file.uploadedBy}&date=${file.date}`
+                        `/FileList?user=${file.uploadedBy}&date=${file.date}`
                       )
                     }
                   >
