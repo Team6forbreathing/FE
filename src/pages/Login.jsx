@@ -25,7 +25,7 @@ function Login() {
     const result = await login(username, password);
     if (result.success) {
       setMessage(result.message || '로그인 성공!');
-      navigate('/Home'); // 디버깅용으로 주석 처리
+      navigate('/'); // 디버깅용으로 주석 처리
     } else {
       console.error('Login failed:', result.message);
       setError(result.message);
