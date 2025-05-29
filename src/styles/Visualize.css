@@ -13,12 +13,24 @@
 }
 
 .modal-content {
-  width: 80vw;
-  height: 70vh;
-  background: #837d7d;
+  position: relative;
+  width: 70vw;
+  height: 80vh;
+  background: #efe4e4;
   padding: 20px;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow-y: auto;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #353434;
 }
 
 .modal-content h2 {

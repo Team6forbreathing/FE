@@ -11,6 +11,11 @@ function Visualize() {
   return (
     <div className="modal-overlay" onClick={() => navigate(-1)}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+
+        <button className="close-button" onClick={() => navigate(-1)}>
+          &times;
+        </button>
+
         <h2>{filename} Visualization</h2>
         <p>---------------------------------- 해당 시각화 자료 설명 ----------------------------------</p>
 
