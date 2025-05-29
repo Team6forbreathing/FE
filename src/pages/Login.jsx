@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Login.css';
 import Header from '../components/Header';
 import { Link } from 'react-router-dom';
@@ -12,6 +13,8 @@ function Login() {
   const [message, setMessage] = useState('');
   const { login } = useAuth();
 
+  const navigate = useNavigate();
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -22,7 +25,7 @@ function Login() {
     const result = await login(username, password);
     if (result.success) {
       setMessage(result.message || '로그인 성공!');
-      // navigate('/dashboard'); // 디버깅용으로 주석 처리
+      navigate('/Home'); // 디버깅용으로 주석 처리
     } else {
       console.error('Login failed:', result.message);
       setError(result.message);
