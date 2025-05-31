@@ -32,7 +32,7 @@ function Data() {
       try {
         console.log("Fetching user data from:", `${import.meta.env.VITE_USER_DATA_LIST_API_URL}${id}`);
 
-        
+      
         const response = await axios.get(`${import.meta.env.VITE_USER_DATA_LIST_API_URL}${id}`, {
           headers: {
             'Content-Type': 'application/json',
