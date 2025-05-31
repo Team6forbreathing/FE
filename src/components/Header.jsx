@@ -15,7 +15,7 @@ function Header() {
           <Link to="/Guide">Guide</Link>
           <Link to="/Data">Data</Link>
           <Link to="/MyPage">My page</Link>
-          {isLoggedIn && decodedAuth !== "USER" && (
+          {isLoggedIn && decodedAuth == "ADMIN" && (
             <Link to="/managing">Managing</Link>
           )}
         </nav>

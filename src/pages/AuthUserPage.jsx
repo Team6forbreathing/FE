@@ -10,7 +10,7 @@ function AuthUserPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoading && decodedAuth == 'USER') {
+    if (!isLoading && decodedAuth !== 'ADMIN') {
       navigate('/');
     }
   }, [isLoading, decodedAuth, navigate]);
