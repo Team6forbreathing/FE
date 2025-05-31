@@ -4,7 +4,7 @@ import apnealogo from '../assets/apnea-logo.png';
 import { useAuth } from '../context/AuthContext';
 
 function Header() {
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, decodedAuth, logout } = useAuth();
 
   return (
     <header className="header">
@@ -15,6 +15,9 @@ function Header() {
           <Link to="/Guide">Guide</Link>
           <Link to="/Data">Data</Link>
           <Link to="/MyPage">My page</Link>
+          {isLoggedIn && decodedAuth !== "USER" && (
+            <Link to="/managing">Managing</Link>
+          )}
         </nav>
       </div>
       <div className="nav-right">

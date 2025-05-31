@@ -24,6 +24,7 @@ const isTokenExpired = (token) => {
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [decodedAuth, setDecodedAuth] = useState(null); // Add state for decodedAuth
 
   useEffect(() => {
     const validateToken = async () => {
@@ -33,6 +34,7 @@ export const AuthProvider = ({ children }) => {
       if (!accessToken || isTokenExpired(accessToken)) {
         console.log("Token missing or expired. Logging out...");
         setIsLoggedIn(false);
+        setDecodedAuth(null); // Reset decodedAuth
         Cookies.remove("user_name");
         Cookies.remove("accessToken");
         Cookies.remove("refreshToken");
@@ -44,6 +46,7 @@ export const AuthProvider = ({ children }) => {
         if (!import.meta.env.VITE_PROFILE_API_URL) {
           console.error("VITE_PROFILE_API_URL is not defined in .env");
           setIsLoggedIn(false);
+          setDecodedAuth(null); // Reset decodedAuth
           setIsLoading(false);
           return;
         }
@@ -57,9 +60,12 @@ export const AuthProvider = ({ children }) => {
         if (response.data.valid) {
           console.log("Token is valid. User is logged in.");
           setIsLoggedIn(true);
+          const userName = Cookies.get("user_name");
+          setDecodedAuth(userName ? atob(userName) : null); // Set decodedAuth
         } else {
           console.log("Server says token is invalid. Logging out...");
           setIsLoggedIn(false);
+          setDecodedAuth(null); // Reset decodedAuth
           Cookies.remove("user_name");
           Cookies.remove("accessToken");
           Cookies.remove("refreshToken");
@@ -67,6 +73,7 @@ export const AuthProvider = ({ children }) => {
       } catch (error) {
         console.error("Token validation error:", error.response?.data || error.message);
         setIsLoggedIn(false);
+        setDecodedAuth(null); // Reset decodedAuth
         Cookies.remove("user_name");
         Cookies.remove("accessToken");
         Cookies.remove("refreshToken");
@@ -90,10 +97,8 @@ export const AuthProvider = ({ children }) => {
 
       console.log("Login response:", response.data);
       setIsLoggedIn(true);
-      console.log("Login state updated, user_name:", Cookies.get("user_name"));
-      console.log("accessToken:", Cookies.get("accessToken"));
-      console.log("refreshToken:", Cookies.get("refreshToken"));
-
+      const userName = Cookies.get("user_name");
+      setDecodedAuth(userName ? atob(userName) : null); // Update decodedAuth on login
       await info();
       return { success: true, message: response.data.message || "로그인 성공!" };
     } catch (error) {
@@ -130,7 +135,6 @@ export const AuthProvider = ({ children }) => {
         { withCredentials: true }
       );
       console.log("Register response:", response.data);
-
       return { success: true, message: response.data.message || "회원가입 성공!" };
     } catch (error) {
       console.error("Register error:", error.response?.data || error.message);
@@ -155,12 +159,14 @@ export const AuthProvider = ({ children }) => {
       Cookies.remove("accessToken");
       Cookies.remove("refreshToken");
       setIsLoggedIn(false);
+      setDecodedAuth(null); // Reset decodedAuth on logout
     } catch (error) {
       console.error("Logout error:", error.response?.data || error.message);
       Cookies.remove("user_name");
       Cookies.remove("accessToken");
       Cookies.remove("refreshToken");
       setIsLoggedIn(false);
+      setDecodedAuth(null); // Reset decodedAuth on logout
     }
   };
 
@@ -180,7 +186,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, isLoading, info, login, register, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, isLoading, decodedAuth, info, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
