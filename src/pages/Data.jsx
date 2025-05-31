@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import '../styles/Data.css';
@@ -11,12 +10,12 @@ import uploadIcon from '../assets/upload.png';
 function Data() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [sortOrder, setSortOrder] = useState('latest'); // 'latest' or 'oldest'
-  const [startDate, setStartData] = useState('');
+  const [startDate, setStartDate] = useState(''); // Fixed typo from setStartData to setStartDate
   const [endDate, setEndDate] = useState('');
   const [files, setFiles] = useState([]); // State for fetched data
   const [isLoading, setIsLoading] = useState(false); // Loading state
   const [error, setError] = useState(null); // Error state
-  const { isLoggedIn } = useAuth(); // Access auth context
+  const { isLoggedIn, info } = useAuth(); // Access auth context
   const navigate = useNavigate();
 
   // Fetch data when startDate or endDate changes
@@ -27,9 +26,13 @@ function Data() {
       setIsLoading(true);
       setError(null);
 
+      const userData = await info();
+      const id = userData.user_id;
+
       try {
+        console.log("Fetching user data from:", `${import.meta.env.VITE_USER_DATA_LIST_API_URL}${id}`);
         
-        const response = await axios.get(import.meta.env.VITE_USER_DATA_LIST_API_URL, {
+        const response = await axios.get(`${import.meta.env.VITE_USER_DATA_LIST_API_URL}${id}`, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -43,7 +46,6 @@ function Data() {
         console.log('API response:', response.data);
 
         // Assuming the API returns an array of objects with id, uploadedBy, and date
-        // Adjust the data structure based on actual API response
         setFiles(response.data || []);
       } catch (err) {
         console.error('Error fetching data:', err.response?.data || err.message);
@@ -123,7 +125,7 @@ function Data() {
               <input
                 type="date"
                 value={startDate}
-                onChange={(e) => setStartData(e.target.value)}
+                onChange={(e) => setStartDate(e.target.value)}
               />
             </label>
             <label>
@@ -149,18 +151,24 @@ function Data() {
               <p className="error-message">{error}</p>
             ) : sortedFiles.length > 0 ? (
               <ul>
-                {sortedFiles.map((file) => (
-                  <li
-                    key={file.id}
-                    className="file-item clickable-box"
-                    onClick={() =>
-                      navigate(`/FileList?user=${file.uploadedBy}&date=${file.date}`)
-                    }
-                  >
-                    <span className="file-name">{file.date}</span>
-                    <span className="file-user">{file.uploadedBy}</span>
-                  </li>
-                ))}
+                {sortedFiles.map((file) => {
+                  // Only render if file has valid properties
+                  if (file.id && file.uploadedBy && file.date) {
+                    return (
+                      <li
+                        key={file.id}
+                        className="file-item clickable-box"
+                        onClick={() =>
+                          navigate(`/FileList?user=${file.uploadedBy}&date=${file.date}`)
+                        }
+                      >
+                        <span className="file-name">{file.date}</span>
+                        <span className="file-user">{file.uploadedBy}</span>
+                      </li>
+                    );
+                  }
+                  return null; // Skip rendering invalid files
+                })}
               </ul>
             ) : (
               <p>해당 날짜 범위의 파일이 없습니다.</p>

@@ -43,18 +43,6 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        if (!import.meta.env.VITE_PROFILE_API_URL) {
-          console.error("VITE_PROFILE_API_URL is not defined in .env");
-          setIsLoggedIn(false);
-          setDecodedAuth(null); // Reset decodedAuth
-          setIsLoading(false);
-          return;
-        }
-
-        console.log("Validating token with server:", import.meta.env.VITE_PROFILE_API_URL);
-        const response = await axios.get(import.meta.env.VITE_PROFILE_API_URL, {
-          withCredentials: true,
-        });
 
         console.log("Server validation response:", response.data);
         if (response.data.valid) {
