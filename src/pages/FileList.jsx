@@ -58,7 +58,7 @@ function FileList() {
   ];
 
   // 임의로 AHI값 생성
-  const [ahi] = useState(33);
+  const [ahi] = useState(10);
   const severity1 = getSeverity1(ahi);
   const severity2 = getSeverity2(ahi);
 

@@ -14,22 +14,22 @@ function Guide() {
   const webguideSteps = [
     {
       id: 1,
-      text: '모든 사용자는 업로드된 수면 데이터를 열람 및 다운로드 할 수 있습니다.',
+      text: 'data 페이지에서 날짜별로 수면 데이터를 확인할 수 있습니다.',
       image: webstep1Img,
     },
     {
       id: 2,
-      text: '권한 사용자는 수면 데이터를 업로드 할 수 있습니다.',
+      text: '날짜를 클릭하여 범위를 설정하면 해당 날짜에 업로드된 수면 데이터 파일을 확인하고 다운받을 수 있습니다.',
       image: webstep2Img,
     },
     {
       id: 3,
-      text: '마이페이지에서 가장 최근에 측정된 개인 수면 데이터를 3개를 다운로드 할 수 있습니다.',
+      text: '데이터 파일을 클릭하면 PPGData.csv와 ACCData.csv 각각의 시각화된 자료를 확인할 수 있습니다.',
       image: webstep3Img,
     },
     {
       id: 4,
-      text: 'Data Result 페이지에서 개인 맞춤형 시각화 자료를 제공합니다.',
+      text: '인가 허용자는 모든 사용자의 데이터를 볼 수 있고 업로드 가능합니다.',
       image: step4Img,
     },
   ];
@@ -60,7 +60,16 @@ function Guide() {
   return (
     <>
       <Header />
+
       <div>
+        <div className="guide-description">
+          <h2>Apnea Guard 사용 가이드</h2>
+          <p>
+            이 페이지에서는 Apnea Guard의 웹과 앱 사용 방법을 단계별로
+            안내합니다. <br />각 단계별 이미지와 설명을 참고하여 데이터를
+            열람하고 측정하는 과정을 쉽게 익혀보세요.
+          </p>
+        </div>
         {/* 위쪽 텍스트 추가 */}
         <div className="webguide-title">웹 가이드</div>
         <div className="webguide-container">
@@ -104,7 +113,6 @@ function Guide() {
         </div>
       </div>
     </>
-
   );
 }
 

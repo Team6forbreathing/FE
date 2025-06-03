@@ -1,3 +1,20 @@
+.guide-description {
+  text-align: center;
+  margin: 60px 0;
+}
+
+.guide-description h2 {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.guide-description p {
+  font-size: 16px;
+  color: white;
+  line-height: 1.5;
+}
+
 .webguide-title {
   text-align: left;
   font-size: 20px;
@@ -75,7 +92,6 @@
   margin-top: 50px;
   /* 위쪽여백 */
   padding-bottom: 50px;
-
 }
 
 .guide-card {

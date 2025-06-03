@@ -43,3 +43,35 @@
   color: #68547c;
   font-size: 16px;
 }
+
+.graph-description {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.graph-description ul {
+  margin-top: 7px;
+  padding-left: 14px;
+}
+
+.graph-description li {
+  margin-bottom: 6px;
+}
+
+.download-button {
+  background-color: #68547c;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.download-button:hover {
+  background-color: #45a049;
+}
