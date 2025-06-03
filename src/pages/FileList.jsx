@@ -4,7 +4,7 @@ import '../styles/FileList.css';
 import Header from '../components/Header';
 import downloadIcon from '../assets/download.png';
 import resultIcon from '../assets/result.png';
-
+import uploadIcon from '../assets/upload.png';
 
 function getSeverity1(ahi) {
   if (ahi < 5) return '[정상]';
@@ -43,6 +43,21 @@ function FileList() {
   const user = searchParams.get('user');
   const date = searchParams.get('date');
 
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
+
+  const handleUpload = (e) => {
+    e.preventDefault();
+    if (selectedFile) {
+      alert(`"${selectedFile.name}" 파일이 업로드되었습니다.`);
+    } else {
+      alert('파일을 선택해주세요.');
+    }
+  };
+
   // 예시 파일 리스트
   const fileList = [
     { name: 'PPG_0.csv' },
@@ -57,8 +72,7 @@ function FileList() {
     { name: 'ACC_4.csv' },
   ];
 
-  // 임의로 AHI값 생성
-  const [ahi] = useState(10);
+  const [ahi] = useState(10); // AHI 임시 수치
   const severity1 = getSeverity1(ahi);
   const severity2 = getSeverity2(ahi);
 
@@ -75,6 +89,28 @@ function FileList() {
           <p>업로더: {user}</p>
           <p>업로드 날짜: {date}</p>
         </div>
+
+        {/* 인가 사용자만 업로드 가능 */}
+        <div className="upload-wrapper">
+          <form onSubmit={handleUpload} className="upload-form">
+            <input
+              type="file"
+              id="fileUpload"
+              onChange={handleFileChange}
+              style={{ display: 'none' }}
+            />
+            <label htmlFor="fileUpload" className="upload-icon-label">
+              <img src={uploadIcon} alt="파일 업로드" />
+            </label>
+            <span className="file-name">
+              {selectedFile ? selectedFile.name : '선택된 파일 없음'}
+            </span>
+            <button type="submit" className="upload-button">
+              파일 업로드
+            </button>
+          </form>
+        </div>
+
 
         <div className="file-table-list">
           <table className="file-table">
@@ -120,7 +156,7 @@ function FileList() {
             <strong>{user}</strong>님, <strong>{date}</strong>에 업로드된 데이터를 바탕으로 측정한 수면 무호흡증 진단 결과입니다.
           </p>
           <p className="ahi-result">
-            AHI 수치: <strong>{ahi}</strong><br></br>
+            AHI 수치: <strong>{ahi}</strong><br />
             Apnea Guard 진단 결과: <span className={getSeverityClass(severity1)}><strong>{severity1}</strong></span>
           </p>
           <hr />

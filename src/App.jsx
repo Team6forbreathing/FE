@@ -9,6 +9,7 @@ import Guide from './pages/Guide';
 import Data from './pages/Data';
 import FileList from './pages/FileList';
 import Visualize from './pages/Visualize';
+// import Auth from './pages/Auth';
 import AuthUserPage from './pages/AuthUserPage';
 
 // 별도 컴포넌트로 분리하여 location 감지
@@ -29,6 +30,7 @@ function AppRoutes() {
         <Route path="/guide" element={<Guide />} />
         <Route path="/Data" element={<Data />} />
         <Route path="/FileList" element={<FileList />} />
+        {/* <Route path="/Auth" element={<Auth />} /> */}
         <Route path="/managing" element={<AuthUserPage />} />
       </Routes>
 

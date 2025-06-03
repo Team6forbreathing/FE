@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 import '../styles/Data.css';
 import Header from '../components/Header';
 import { useAuth } from '../context/AuthContext';
-import uploadIcon from '../assets/upload.png';
+
 
 function Data() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -32,7 +32,7 @@ function Data() {
       try {
         console.log("Fetching user data from:", `${import.meta.env.VITE_USER_DATA_LIST_API_URL}${id}`);
 
-      
+
         const response = await axios.get(`${import.meta.env.VITE_USER_DATA_LIST_API_URL}${id}`, {
           headers: {
             'Content-Type': 'application/json',
@@ -101,7 +101,7 @@ function Data() {
         <section className="data-result-page">
           <h2>Data File List</h2>
 
-          <form onSubmit={handleUpload} className="upload-form">
+          {/* <form onSubmit={handleUpload} className="upload-form">
             <input
               type="file"
               id="fileUpload"
@@ -117,12 +117,12 @@ function Data() {
             <button type="submit" className="upload-button">
               파일 업로드
             </button>
-          </form>
+          </form> */}
 
           {/* Date filter inputs */}
           <div className="date-filter">
             <label>
-              시작일:
+              조회 시작일:
               <input
                 type="date"
                 value={startDate}
@@ -130,7 +130,7 @@ function Data() {
               />
             </label>
             <label>
-              종료일:
+              조회 종료일:
               <input
                 type="date"
                 value={endDate}

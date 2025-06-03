@@ -1,0 +1,55 @@
+.auth-user-page {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+.auth-user-section {
+  width: 40%;
+  height: 70vh;
+  background-color: #1e1e1e;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  color: #fff;
+}
+
+.user-list-title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.user-list-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  padding: 12px 20px;
+  border-bottom: 2px solid #444;
+  margin-bottom: 8px;
+}
+
+.user-list-scroll {
+  max-height: 350px;
+  overflow-y: auto;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.user-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #2a2a2a;
+  padding: 12px 20px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.user-list-item:hover {
+  background-color: #3a3a3a;
+}
