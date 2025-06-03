@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 import '../styles/FileList.css';
 import Header from '../components/Header';
 import downloadIcon from '../assets/download.png';
@@ -40,10 +41,68 @@ function FileList() {
   const navigate = useNavigate();
 
   const searchParams = new URLSearchParams(location.search);
-  const user = searchParams.get('user');
-  const date = searchParams.get('date');
+  const user = searchParams.get('user'); // 예: "admin"
+  const date = searchParams.get('date'); // 예: "2025-05-31"
 
+  const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [ahi, setAhi] = useState(null); // AHI 값을 API에서 가져옴
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user || !date) return;
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_USER_DATA_LIST_API_URL}${user}`, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          params: {
+            startDate: date, // 단일 날짜로 요청
+            endDate: date,
+          },
+          withCredentials: true,
+        });
+
+        console.log('FileList API response:', response.data);
+
+        // API 응답은 2D 배열이므로, 해당 날짜 인덱스에 맞는 데이터를 추출
+        const start = new Date(date);
+        const fileList = response.data
+          .map((fileArray, index) => {
+            const currentDate = new Date(start);
+            currentDate.setDate(start.getDate() + index);
+            return {
+              date: currentDate.toISOString().split('T')[0],
+              files: fileArray,
+            };
+          })
+          .filter((item) => item.date === date); // 해당 날짜 데이터만 필터링
+
+        if (fileList.length > 0) {
+          setFiles(fileList[0].files || []);
+          setAhi(response.data[0]?.ahi || 10); // AHI 값은 API 응답에서 가져오도록 수정 가능
+        } else {
+          setFiles([]);
+          setAhi(10); // 기본값
+        }
+      } catch (err) {
+        console.error('Error fetching data:', err.response?.data || err.message);
+        setError('데이터를 불러오는 중 오류가 발생했습니다.');
+        setFiles([]);
+        setAhi(10); // 에러 시 기본값
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user, date]);
 
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
@@ -58,23 +117,40 @@ function FileList() {
     }
   };
 
-  // 예시 파일 리스트
-  const fileList = [
-    { name: 'PPG_0.csv' },
-    { name: 'ACC_0.csv' },
-    { name: 'PPG_1.csv' },
-    { name: 'ACC_1.csv' },
-    { name: 'PPG_2.csv' },
-    { name: 'ACC_2.csv' },
-    { name: 'PPG_3.csv' },
-    { name: 'ACC_3.csv' },
-    { name: 'PPG_4.csv' },
-    { name: 'ACC_4.csv' },
-  ];
+  const handleDownload = async (fileName) => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_USER_DATA_LIST_API_URL}${user}/download`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          params: {
+            date: date, // 쿼리 파라미터로 date 추가
+            file: fileName, // 쿼리 파라미터로 file 추가
+          },
+          withCredentials: true,
+          responseType: 'blob', // 파일 다운로드를 위해 blob 타입으로 설정
+        }
+      );
 
-  const [ahi] = useState(10); // AHI 임시 수치
-  const severity1 = getSeverity1(ahi);
-  const severity2 = getSeverity2(ahi);
+      // Blob 데이터를 다운로드 링크로 변환
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName); // 파일명 설정
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url); // 메모리 해제
+    } catch (err) {
+      console.error('Error downloading file:', err.response?.data || err.message);
+      alert('파일 다운로드 중 오류가 발생했습니다.');
+    }
+  };
+
+  const severity1 = ahi !== null ? getSeverity1(ahi) : '[정상]';
+  const severity2 = ahi !== null ? getSeverity2(ahi) : getSeverity2(10);
 
   return (
     <>
@@ -111,7 +187,6 @@ function FileList() {
           </form>
         </div>
 
-
         <div className="file-table-list">
           <table className="file-table">
             <thead>
@@ -121,31 +196,46 @@ function FileList() {
               </tr>
             </thead>
             <tbody>
-              {fileList.map((file, idx) => (
-                <tr key={idx}>
-                  <td
-                    onClick={() =>
-                      navigate(`/visualize/${file.name}?user=${user}&date=${date}`, {
-                        state: { backgroundLocation: location },
-                      })
-                    }
-                    className="file-name-cell"
-                    style={{ cursor: 'pointer' }}
-                  >
-                    {file.name}
-                  </td>
-                  <td>
-                    <a
-                      href={`/files/${file.name}`}
-                      download
-                      className="download-icon-btn"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <img src={downloadIcon} alt="다운로드" />
-                    </a>
-                  </td>
+              {isLoading ? (
+                <tr>
+                  <td colSpan="2">데이터를 불러오는 중...</td>
                 </tr>
-              ))}
+              ) : error ? (
+                <tr>
+                  <td colSpan="2">{error}</td>
+                </tr>
+              ) : files.length > 0 ? (
+                files.map((file, idx) => (
+                  <tr key={idx}>
+                    <td
+                      onClick={() =>
+                        navigate(`/visualize/${file}?user=${user}&date=${date}`, {
+                          state: { backgroundLocation: location },
+                        })
+                      }
+                      className="file-name-cell"
+                      style={{ cursor: 'pointer' }}
+                    >
+                      {file}
+                    </td>
+                    <td>
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownload(file);
+                        }}
+                        className="download-icon-btn"
+                      >
+                        <img src={downloadIcon} alt="Download" />
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="2">해당 날짜의 파일이 없습니다.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -156,14 +246,12 @@ function FileList() {
             <strong>{user}</strong>님, <strong>{date}</strong>에 업로드된 데이터를 바탕으로 측정한 수면 무호흡증 진단 결과입니다.
           </p>
           <p className="ahi-result">
-            AHI 수치: <strong>{ahi}</strong><br />
+            AHI 수치: <strong>{ahi !== null ? ahi : 'N/A'}</strong><br />
             Apnea Guard 진단 결과: <span className={getSeverityClass(severity1)}><strong>{severity1}</strong></span>
           </p>
           <hr />
           <hr />
-          <p className="ahi-description">
-            {severity2}
-          </p>
+          <p className="ahi-description">{severity2}</p>
         </div>
       </div>
     </>
