@@ -6,11 +6,10 @@ import '../styles/Data.css';
 import Header from '../components/Header';
 import { useAuth } from '../context/AuthContext';
 
-
 function Data() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [sortOrder, setSortOrder] = useState('latest'); // 'latest' or 'oldest'
-  const [startDate, setStartDate] = useState(''); // Fixed typo from setStartData to setStartDate
+  const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [files, setFiles] = useState([]); // State for fetched data
   const [isLoading, setIsLoading] = useState(false); // Loading state
@@ -32,7 +31,6 @@ function Data() {
       try {
         console.log("Fetching user data from:", `${import.meta.env.VITE_USER_DATA_LIST_API_URL}${id}`);
 
-
         const response = await axios.get(`${import.meta.env.VITE_USER_DATA_LIST_API_URL}${id}`, {
           headers: {
             'Content-Type': 'application/json',
@@ -46,8 +44,21 @@ function Data() {
 
         console.log('API response:', response.data);
 
-        // Assuming the API returns an array of objects with id, uploadedBy, and date
-        setFiles(response.data || []);
+        // Process the 2D array into a list of objects with date and files
+        const start = new Date(startDate);
+        const fileList = response.data
+          .map((fileArray, index) => {
+            const date = new Date(start);
+            date.setDate(start.getDate() + index);
+            return {
+              date: date.toISOString().split('T')[0], // Format as YYYY-MM-DD
+              files: fileArray,
+            };
+          })
+          .filter((item) => item.files.length > 0); // Filter out empty file arrays
+
+        setFiles(fileList);
+        console.log('Processed files:', fileList);
       } catch (err) {
         console.error('Error fetching data:', err.response?.data || err.message);
         setError('데이터를 불러오는 중 오류가 발생했습니다.');
@@ -76,23 +87,26 @@ function Data() {
     setSortOrder((prev) => (prev === 'latest' ? 'oldest' : 'latest'));
   };
 
-  // Filter files by date (client-side, in case API doesn't filter)
-  const filteredFiles = files.filter((file) => {
-    const fileDate = new Date(file.date);
-    const start = startDate ? new Date(startDate) : null;
-    const end = endDate ? new Date(endDate) : null;
-
-    if (start && fileDate < start) return false;
-    if (end && fileDate > end) return false;
-    return true;
-  });
-
-  // Sort filtered files
-  const sortedFiles = [...filteredFiles].sort((a, b) =>
+  // Sort files by date
+  const sortedFiles = [...files].sort((a, b) =>
     sortOrder === 'latest'
       ? new Date(b.date) - new Date(a.date)
       : new Date(a.date) - new Date(b.date)
   );
+
+  // Group files by set number (e.g., _0, _1, _3)
+  const groupFilesBySet = (fileArray) => {
+    const sets = {};
+    fileArray.forEach((file) => {
+      const match = file.match(/_(\d+)\.(json|csv)/);
+      if (match) {
+        const setNumber = `_${match[1]}`;
+        if (!sets[setNumber]) sets[setNumber] = [];
+        sets[setNumber].push(file);
+      }
+    });
+    return Object.entries(sets).map(([setNumber, files]) => ({ setNumber, files }));
+  };
 
   return (
     <>
@@ -101,25 +115,6 @@ function Data() {
         <section className="data-result-page">
           <h2>Data File List</h2>
 
-          {/* <form onSubmit={handleUpload} className="upload-form">
-            <input
-              type="file"
-              id="fileUpload"
-              onChange={handleFileChange}
-              style={{ display: 'none' }}
-            />
-            <label htmlFor="fileUpload" className="upload-icon-label">
-              <img src={uploadIcon} alt="파일 업로드" />
-            </label>
-            <span className="file-name">
-              {selectedFile ? selectedFile.name : '선택된 파일 없음'}
-            </span>
-            <button type="submit" className="upload-button">
-              파일 업로드
-            </button>
-          </form> */}
-
-          {/* Date filter inputs */}
           <div className="date-filter">
             <label>
               조회 시작일:
@@ -127,6 +122,7 @@ function Data() {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
+                className="date-input"
               />
             </label>
             <label>
@@ -135,44 +131,54 @@ function Data() {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
+                className="date-input"
               />
             </label>
           </div>
 
           <div className="file-list">
-            <h3>업로드된 파일 목록</h3>
-            <div className="sort-toggle">
-              <button onClick={toggleSortOrder}>
-                {sortOrder === 'latest' ? '최신순' : '오래된순'}
-              </button>
+            <div className="file-list-header">
+              <h3>업로드된 파일 목록</h3>
+              <div className="sort-toggle">
+                <button onClick={toggleSortOrder}>
+                  {sortOrder === 'latest' ? '최신순' : '오래된순'}
+                </button>
+              </div>
             </div>
             {isLoading ? (
-              <p>데이터를 불러오는 중...</p>
+              <p className="loading-message">데이터를 불러오는 중...</p>
             ) : error ? (
               <p className="error-message">{error}</p>
             ) : sortedFiles.length > 0 ? (
-              <ul>
-                {sortedFiles.map((file) => {
-                  // Only render if file has valid properties
-                  if (file.id && file.uploadedBy && file.date) {
-                    return (
-                      <li
-                        key={file.id}
-                        className="file-item clickable-box"
-                        onClick={() =>
-                          navigate(`/FileList?user=${file.uploadedBy}&date=${file.date}`)
-                        }
-                      >
-                        <span className="file-name">{file.date}</span>
-                        <span className="file-user">{file.uploadedBy}</span>
-                      </li>
-                    );
-                  }
-                  return null; // Skip rendering invalid files
-                })}
-              </ul>
+              <div className="file-list-container">
+                {sortedFiles.map((item, index) => (
+                  <div key={index} className="date-group">
+                    <h4 className="date-header">{item.date}</h4>
+                    {groupFilesBySet(item.files).map(({ setNumber, files }, setIndex) => (
+                      <div key={setIndex} className="file-set">
+                        <button
+                          className="set-button clickable-box"
+                          onClick={() =>
+                            navigate(`/FileList?user=admin&date=${item.date}&set=${setNumber.slice(1)}`)
+                          }
+                        >
+                          <span className="set-title">수면데이터{setNumber}</span>
+                        </button>
+                        <div className="file-set-details">
+                          {files.map((file, fileIndex) => (
+                            <span key={fileIndex} className="file-detail">
+                              {file}
+                              {fileIndex < files.length - 1 && <span className="file-separator"> | </span>}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
             ) : (
-              <p>해당 날짜 범위의 파일이 없습니다.</p>
+              <p className="no-files-message">해당 날짜 범위의 파일이 없습니다.</p>
             )}
           </div>
         </section>
