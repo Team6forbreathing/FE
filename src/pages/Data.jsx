@@ -153,17 +153,17 @@ function Data() {
               <div className="file-list-container">
                 {sortedFiles.map((item, index) => (
                   <div key={index} className="date-group">
-                    <h4 className="date-header">{item.date}</h4>
+                    <h4
+                      className="date-header clickable-date"
+                      onClick={() => navigate(`/FileList?user=admin&date=${item.date}`)}
+                    >
+                      {item.date}
+                    </h4>
                     {groupFilesBySet(item.files).map(({ setNumber, files }, setIndex) => (
                       <div key={setIndex} className="file-set">
-                        <button
-                          className="set-button clickable-box"
-                          onClick={() =>
-                            navigate(`/FileList?user=admin&date=${item.date}&set=${setNumber.slice(1)}`)
-                          }
-                        >
+                        <div className="set-button">
                           <span className="set-title">수면데이터{setNumber}</span>
-                        </button>
+                        </div>
                         <div className="file-set-details">
                           {files.map((file, fileIndex) => (
                             <span key={fileIndex} className="file-detail">
