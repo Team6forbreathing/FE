@@ -59,6 +59,7 @@ jobs:
             VITE_FILE_COUNT_API_URL=${{ secrets.VITE_FILE_COUNT_API_URL }}
             VITE_USER_DATA_LIST_API_URL=${{secrets.VITE_USER_DATA_LIST_API_URL}}
             VITE_RECENT_USER_DATA_API_URL=${{secrets.VITE_RECENT_USER_DATA_API_URL}}
+            VITE_ALL_USER_LIST=${{secrets.VITE_ALL_USER_LIST}}
         env:
           DOCKER_BUILDKIT: 1
 
@@ -73,6 +74,7 @@ jobs:
           echo "VITE_FILE_COUNT_API_URL=${{ secrets.VITE_FILE_COUNT_API_URL }}"
           echo "VITE_USER_DATA_LIST_API_URL=${{secrets.VITE_USER_DATA_LIST_API_URL}}"
           echo "VITE_RECENT_USER_DATA_API_URL=${{secrets.VITE_RECENT_USER_DATA_API_URL}}"
+          echo "VITE_ALL_USER_LIST=${{secrets.VITE_ALL_USER_LIST}}"
           echo "Docker 태그: ${{ secrets.DOCKER_USERNAME }}/react_image:latest"
 
       # Step 7: SSH 설정 확인
@@ -130,5 +132,6 @@ jobs:
               -e VITE_USER_COUNT_API_URL=${{ secrets.VITE_USER_COUNT_API_URL }} \
               -e VITE_FILE_COUNT_API_URL=${{ secrets.VITE_FILE_COUNT_API_URL }} \
               -e VITE_USER_DATA_LIST_API_URL=${{secrets.VITE_USER_DATA_LIST_API_URL}} \
+              -e VITE_ALL_USER_LIST=${{secrets.VITE_ALL_USER_LIST}} \
               ${{ secrets.DOCKER_USERNAME }}/react_image:latest
           '
