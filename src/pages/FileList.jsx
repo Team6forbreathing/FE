@@ -50,57 +50,57 @@ function FileList() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user || !date) return;
+  const fetchData = async () => {
+    if (!user || !date) return;
 
-      setIsLoading(true);
-      setError(null);
+    setIsLoading(true);
+    setError(null);
 
-      try {
-        const response = await axios.get(`${import.meta.env.VITE_USER_DATA_LIST_API_URL}${user}`, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          params: {
-            startDate: date, // 단일 날짜로 요청
-            endDate: date,
-          },
-          withCredentials: true,
-        });
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_USER_DATA_LIST_API_URL}${user}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        params: {
+          startDate: date, // 단일 날짜로 요청
+          endDate: date,
+        },
+        withCredentials: true,
+      });
 
-        console.log('FileList API response:', response.data);
+      console.log('FileList API response:', response.data);
 
-        // API 응답은 2D 배열이므로, 해당 날짜 인덱스에 맞는 데이터를 추출
-        const start = new Date(date);
-        const fileList = response.data
-          .map((fileArray, index) => {
-            const currentDate = new Date(start);
-            currentDate.setDate(start.getDate() + index);
-            return {
-              date: currentDate.toISOString().split('T')[0],
-              files: fileArray,
-            };
-          })
-          .filter((item) => item.date === date); // 해당 날짜 데이터만 필터링
+      // API 응답은 2D 배열이므로, 해당 날짜 인덱스에 맞는 데이터를 추출
+      const start = new Date(date);
+      const fileList = response.data
+        .map((fileArray, index) => {
+          const currentDate = new Date(start);
+          currentDate.setDate(start.getDate() + index);
+          return {
+            date: currentDate.toISOString().split('T')[0],
+            files: fileArray,
+          };
+        })
+        .filter((item) => item.date === date); // 해당 날짜 데이터만 필터링
 
-        if (fileList.length > 0) {
-          setFiles(fileList[0].files || []);
-          setAhi(response.data[0]?.ahi || 10); // AHI 값은 API 응답에서 가져오도록 수정 가능
-        } else {
-          setFiles([]);
-          setAhi(10); // 기본값
-        }
-      } catch (err) {
-        console.error('Error fetching data:', err.response?.data || err.message);
-        setError('데이터를 불러오는 중 오류가 발생했습니다.');
+      if (fileList.length > 0) {
+        setFiles(fileList[0].files || []);
+        setAhi(response.data[0]?.ahi || 10); // AHI 값은 API 응답에서 가져오도록 수정 가능
+      } else {
         setFiles([]);
-        setAhi(10); // 에러 시 기본값
-      } finally {
-        setIsLoading(false);
+        setAhi(10); // 기본값
       }
-    };
+    } catch (err) {
+      console.error('Error fetching data:', err.response?.data || err.message);
+      setError('데이터를 불러오는 중 오류가 발생했습니다.');
+      setFiles([]);
+      setAhi(10); // 에러 시 기본값
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, [user, date]);
 
@@ -108,12 +108,46 @@ function FileList() {
     setSelectedFile(e.target.files[0]);
   };
 
-  const handleUpload = (e) => {
+  const handleUpload = async (e) => {
     e.preventDefault();
-    if (selectedFile) {
-      alert(`"${selectedFile.name}" 파일이 업로드되었습니다.`);
-    } else {
+    if (!selectedFile) {
       alert('파일을 선택해주세요.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile); // Add the file to FormData
+      formData.append('date', date); // Include the date parameter
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_USER_DATA_LIST_API_URL}${user}/upload`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          withCredentials: true,
+        }
+      );
+
+      console.log('File upload response:', response.data);
+      alert(`"${selectedFile.name}" 파일이 성공적으로 업로드되었습니다.`);
+
+      // Reset the selected file
+      setSelectedFile(null);
+
+      // Refresh the file list after upload
+      await fetchData();
+    } catch (err) {
+      console.error('Error uploading file:', err.response?.data || err.message);
+      alert('파일 업로드 중 오류가 발생했습니다.');
+      setError('파일 업로드 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -159,7 +193,8 @@ function FileList() {
       <div className="visualize-container">
         <p>{date}에 측정된 수면 데이터 파일입니다.</p>
         <p>파일 이름을 클릭하면, 관련 시각화 자료를 볼 수 있습니다.</p>
-        <p>수면 데이터를 바탕으로 수면 무호흡 정도를 진단한 결과를 확인해보세요!</p>
+        <p
+>수면 데이터를 바탕으로 수면 무호흡 정도를 진단한 결과를 확인해보세요!</p>
 
         <div className="visualize-meta">
           <p>업로더: {user}</p>
@@ -181,8 +216,8 @@ function FileList() {
             <span className="file-name">
               {selectedFile ? selectedFile.name : '선택된 파일 없음'}
             </span>
-            <button type="submit" className="upload-button">
-              파일 업로드
+            <button type="submit" className="upload-button" disabled={isLoading}>
+              {isLoading ? '업로드 중...' : '파일 업로드'}
             </button>
           </form>
         </div>
