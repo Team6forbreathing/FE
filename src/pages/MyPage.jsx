@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/MyPage.css';
 import Header from '../components/Header';
@@ -18,6 +19,8 @@ function MyPage() {
   const [recentDates, setRecentDates] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
 
   // Fetch user profile information
   useEffect(() => {
@@ -92,7 +95,6 @@ function MyPage() {
             id: item.date,
             date: item.date,
             uploadedBy: user.id,
-            files: item.files,
           }));
 
         setRecentDates(dateList);
@@ -107,43 +109,6 @@ function MyPage() {
 
     fetchRecentData();
   }, [isLoggedIn, user.id]);
-
-  // Handle file download for a specific date
-  const handleDownload = async (date, files) => {
-    try {
-      // Download each file for the given date
-      for (const fileName of files) {
-        const response = await axios.get(
-          `${import.meta.env.VITE_USER_DATA_LIST_API_URL}${user.id}/download`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            params: {
-              date: date,
-              file: fileName,
-            },
-            withCredentials: true,
-            responseType: 'blob',
-          }
-        );
-
-        // Create download link
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', fileName);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.URL.revokeObjectURL(url);
-      }
-      alert(`"${date}"의 파일들이 다운로드되었습니다.`);
-    } catch (err) {
-      console.error('Error downloading files:', err.response?.data || err.message);
-      alert('파일 다운로드 중 오류가 발생했습니다.');
-    }
-  };
 
   return (
     <>
@@ -198,8 +163,8 @@ function MyPage() {
           <div className="download-box">
             <div className="download-title-bar">수면 데이터 다운로드</div>
             <p className="download-description">
-              최근 일주일간의 수면 기록 (최대 3일)을 확인하고 다운로드하세요.<br />
-              날짜를 클릭하여 해당 날짜의 파일들을 다운로드할 수 있습니다.
+              최근 일주일간의 수면 기록 (최대 3일)을 확인하세요.<br />
+              날짜를 클릭하여 해당 날짜의 파일들을 확인하고 다운로드할 수 있습니다.
             </p>
 
             {isLoading ? (
@@ -212,7 +177,7 @@ function MyPage() {
                   <li
                     key={index}
                     className="file-item"
-                    onClick={() => handleDownload(item.date, item.files)}
+                    onClick={() => navigate(`/FileList?user=${item.uploadedBy}&date=${item.date}`)}
                   >
                     <span>📄 <p>{item.date}</p></span>
                   </li>
