@@ -155,8 +155,10 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  overflow: visible; /* Remove nested scrollbar by allowing content to wrap */
 }
 
+/* 파일 상세 정보 스타일 */
 .file-detail {
   overflow: hidden;
   text-overflow: ellipsis;
