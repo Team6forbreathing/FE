@@ -160,8 +160,8 @@ td {
 .file-list {
   list-style: none;
   padding: 0;
-  margin: 5 30px;
-  gap: 10px;
+  margin: 0 30px;
+  gap: 15px;
   max-height: 200px;
   overflow-y: auto;
   padding-right: 8px;
