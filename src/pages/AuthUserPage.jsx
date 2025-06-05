@@ -16,33 +16,43 @@ function AuthUserPage() {
       navigate('/');
     }
 
-    // Fetch users from API
-    const fetchUsers = async () => {
+    // Fetch all users from API across all pages
+    const fetchAllUsers = async () => {
       try {
-        const response = await fetch(import.meta.env.VITE_ALL_USER_LIST, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
+        let allUsers = [];
+        let page = 0;
+        let totalPages = 1;
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch users');
+        while (page < totalPages) {
+          const response = await fetch(`${import.meta.env.VITE_ALL_USER_LIST}?page=${page}&size=10`, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch users');
+          }
+
+          const data = await response.json();
+          const mappedUsers = data.content.map(user => ({
+            userId: user.userId,
+            userName: user.userName
+          }));
+
+          allUsers = [...allUsers, ...mappedUsers];
+          totalPages = data.totalPages;
+          page++;
         }
 
-        const data = await response.json();
-        // Map only userId and userName from the content array
-        const mappedUsers = data.content.map(user => ({
-          userId: user.userId,
-          userName: user.userName
-        }));
-        setUsers(mappedUsers);
+        setUsers(allUsers);
       } catch (err) {
         setError(err.message);
       }
     };
 
     if (!isLoading) {
-      fetchUsers();
+      fetchAllUsers();
     }
   }, [isLoading, decodedAuth, navigate]);
 
