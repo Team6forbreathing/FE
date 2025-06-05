@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import '../styles/Data.css';
@@ -16,8 +16,13 @@ function Data() {
   const [error, setError] = useState(null); // Error state
   const { isLoggedIn, info } = useAuth(); // Access auth context
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Fetch data when startDate or endDate changes
+  // Extract user parameter from URL
+  const searchParams = new URLSearchParams(location.search);
+  const userParam = searchParams.get('user'); // e.g., "test" from ?user=test
+
+  // Fetch data when startDate, endDate, or userParam changes
   useEffect(() => {
     const fetchData = async () => {
       if (!startDate || !endDate || !isLoggedIn) return; // Only fetch if logged in and dates are set
@@ -25,13 +30,20 @@ function Data() {
       setIsLoading(true);
       setError(null);
 
-      const userData = await info();
-      const id = userData.user_id;
+      let userId;
+      if (userParam) {
+        // If user parameter is provided in the URL, use it
+        userId = userParam;
+      } else {
+        // Otherwise, fall back to the logged-in user's ID
+        const userData = await info();
+        userId = userData.user_id;
+      }
 
       try {
-        console.log("Fetching user data from:", `${import.meta.env.VITE_USER_DATA_LIST_API_URL}${id}`);
+        console.log("Fetching user data from:", `${import.meta.env.VITE_USER_DATA_LIST_API_URL}${userId}`);
 
-        const response = await axios.get(`${import.meta.env.VITE_USER_DATA_LIST_API_URL}${id}`, {
+        const response = await axios.get(`${import.meta.env.VITE_USER_DATA_LIST_API_URL}${userId}`, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -69,7 +81,7 @@ function Data() {
     };
 
     fetchData();
-  }, [startDate, endDate, isLoggedIn]);
+  }, [startDate, endDate, isLoggedIn, userParam]); // Add userParam as a dependency
 
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
@@ -155,7 +167,7 @@ function Data() {
                   <div key={index} className="date-group">
                     <h4
                       className="date-header clickable-date"
-                      onClick={() => navigate(`/FileList?user=admin&date=${item.date}`)}
+                      onClick={() => navigate(`/FileList?user=${userParam || 'admin'}&date=${item.date}`)}
                     >
                       {item.date}
                     </h4>
