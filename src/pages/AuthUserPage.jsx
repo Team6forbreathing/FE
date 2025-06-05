@@ -1,30 +1,48 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/AuthUserPage.css';
-import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import { useAuth } from '../context/AuthContext';
 
 function AuthUserPage() {
   const { isLoading, decodedAuth } = useAuth();
   const navigate = useNavigate();
-
-  const users = [
-    { userId: 'user1', userName: '홍길동' },
-    { userId: 'user2', userName: '김철수' },
-    { userId: 'user3', userName: '이영희' },
-    { userId: 'user4', userName: '홍길동' },
-    { userId: 'user5', userName: '김철수' },
-    { userId: 'user6', userName: '이영희' },
-    { userId: 'user7', userName: '홍길동' },
-    { userId: 'user8', userName: '김철수' },
-    { userId: 'user9', userName: '이영희' },
-    // 더 많은 사용자 추가 가능
-  ];
+  const [users, setUsers] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Check authorization
     if (!isLoading && decodedAuth !== 'ADMIN') {
       navigate('/');
+    }
+
+    // Fetch users from API
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch(import.meta.env.VITE_ALL_USER_LIST, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch users');
+        }
+
+        const data = await response.json();
+        // Map only userId and userName from the content array
+        const mappedUsers = data.content.map(user => ({
+          userId: user.userId,
+          userName: user.userName
+        }));
+        setUsers(mappedUsers);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    if (!isLoading) {
+      fetchUsers();
     }
   }, [isLoading, decodedAuth, navigate]);
 
@@ -35,6 +53,19 @@ function AuthUserPage() {
         <main className="auth-user-page">
           <section className="auth-user-section">
             <p>로딩 중...</p>
+          </section>
+        </main>
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <Header />
+        <main className="auth-user-page">
+          <section className="auth-user-section">
+            <p>Error: {error}</p>
           </section>
         </main>
       </>
