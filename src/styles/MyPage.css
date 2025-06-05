@@ -163,7 +163,7 @@ td {
   margin: 0 30px;
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Adjust this value to increase/decrease spacing */
+  gap: 10px; /* Adjust this value to increase/decrease spacing */
   max-height: 200px;
   overflow-y: auto;
   padding-right: 8px;
