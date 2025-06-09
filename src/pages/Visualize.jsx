@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   LineChart,
   Line,
@@ -11,23 +11,25 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import Papa from 'papaparse';
-import html2canvas from 'html2canvas'; // 추가
+import html2canvas from 'html2canvas';
 import '../styles/Visualize.css';
 
 function Visualize() {
-  const { filename } = useParams();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(useLocation().search);
   const user = searchParams.get('user');
   const date = searchParams.get('date');
-
+  // filename을 URL 파라미터에서 가져오지 않고, PPG 또는 ACC로 고정
   const [data, setData] = useState([]);
   const [columns, setColumns] = useState([]);
+  const [dataType, setDataType] = useState('PPG'); // 기본적으로 PPG로 설정 (또는 ACC로 변경 가능)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`/data/${filename}`);
+        // 파일 경로를 하드코딩
+        const filePath = dataType === 'PPG' ? '/data/PPG_0.csv' : '/data/ACC_0.csv';
+        const response = await fetch(filePath);
         if (!response.ok) throw new Error('파일을 찾을 수 없습니다.');
         const text = await response.text();
         const result = Papa.parse(text, {
@@ -38,7 +40,7 @@ function Visualize() {
 
         let parsedData = [];
 
-        if (filename.toLowerCase().includes('ppg')) {
+        if (dataType === 'PPG') {
           parsedData = result.data
             .filter(
               (row) =>
@@ -57,7 +59,8 @@ function Visualize() {
               ppgIR: Number(row['ppgIR']),
               ppgR: Number(row['ppgR']),
             }));
-        } else if (filename.toLowerCase().includes('acc')) {
+          setColumns(['ppgG', 'ppgIR', 'ppgR']);
+        } else if (dataType === 'ACC') {
           parsedData = result.data
             .filter(
               (row) =>
@@ -76,27 +79,19 @@ function Visualize() {
               accY: Number(row['accY']),
               accZ: Number(row['accZ']),
             }));
+          setColumns(['accX', 'accY', 'accZ']);
         }
 
         setData(parsedData);
-        console.log('파일명:', filename);
-        console.log('파싱된 데이터 예시:', parsedData.slice(0, 5));
-        console.log('컬럼:', columns);
-
-        if (filename.toLowerCase().includes('ppg')) {
-          setColumns(['ppgG', 'ppgIR', 'ppgR']);
-        } else if (filename.toLowerCase().includes('acc')) {
-          setColumns(['accX', 'accY', 'accZ']);
-        }
       } catch (error) {
         console.error('데이터 로드 실패:', error);
       }
     };
 
     fetchData();
-  }, [filename]);
+  }, [dataType]);
 
-  // 다운로드 함수 추가
+  // 다운로드 함수
   const handleDownload = () => {
     const chartArea = document.getElementById('chart-container');
     if (!chartArea) {
@@ -106,29 +101,41 @@ function Visualize() {
 
     html2canvas(chartArea, { backgroundColor: '#ffffff' }).then((canvas) => {
       const link = document.createElement('a');
-      link.download = `${filename}-graph.png`;
+      link.download = `${dataType}_0-graph.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
     });
+  };
+
+  // 데이터 타입 전환 버튼 (PPG <-> ACC)
+  const toggleDataType = () => {
+    setDataType((prev) => (prev === 'PPG' ? 'ACC' : 'PPG'));
   };
 
   return (
     <div className="modal-overlay" onClick={() => navigate(-1)}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <button className="close-button" onClick={() => navigate(-1)}>
-          &times;
+          ×
         </button>
 
-        <h2>{filename} Visualization</h2>
+        <h2>{dataType}_0.csv Visualization</h2>
 
-        {/* 그래프 다운로드 버튼 (왼쪽 하단 위치) */}
+        {/* 데이터 타입 전환 버튼 */}
+        <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
+          <button onClick={toggleDataType} className="toggle-button">
+            {dataType === 'PPG' ? 'ACC 데이터 보기' : 'PPG 데이터 보기'}
+          </button>
+        </div>
+
+        {/* 그래프 다운로드 버튼 */}
         <div style={{ position: 'absolute', bottom: '20px', right: '20px' }}>
           <button onClick={handleDownload} className="download-button">
             그래프 다운로드 (PNG)
           </button>
         </div>
 
-        {/* 그래프 영역에 ID 추가 */}
+        {/* 그래프 영역 */}
         <div id="chart-container" style={{ width: '100%', height: 400 }}>
           <ResponsiveContainer>
             <LineChart data={data}>
@@ -155,9 +162,9 @@ function Visualize() {
             </LineChart>
           </ResponsiveContainer>
 
-          {/* 설명 텍스트 추가 */}
+          {/* 설명 텍스트 */}
           <div className="graph-description">
-            {filename.toLowerCase().includes('ppg') && (
+            {dataType === 'PPG' && (
               <div>
                 <p>
                   PPG 데이터는 혈류량 변화를 측정한 생체신호로, 심박수와
@@ -187,7 +194,7 @@ function Visualize() {
                 </ul>
               </div>
             )}
-            {filename.toLowerCase().includes('acc') && (
+            {dataType === 'ACC' && (
               <div>
                 <p>
                   ACC 데이터는 착용자의 움직임을 나타내는 가속도 데이터로, 각
