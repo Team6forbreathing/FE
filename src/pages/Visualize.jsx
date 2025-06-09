@@ -79,6 +79,9 @@ function Visualize() {
         }
 
         setData(parsedData);
+        console.log('파일명:', filename);
+        console.log('파싱된 데이터 예시:', parsedData.slice(0, 5));
+        console.log('컬럼:', columns);
 
         if (filename.toLowerCase().includes('ppg')) {
           setColumns(['ppgG', 'ppgIR', 'ppgR']);
