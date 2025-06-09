@@ -22,6 +22,18 @@ function Data() {
   const searchParams = new URLSearchParams(location.search);
   const userParam = searchParams.get('user'); // e.g., "test" from ?user=test
 
+  // Generate all dates between startDate and endDate
+  const generateDateRange = (start, end) => {
+    const dates = [];
+    let currentDate = new Date(start);
+    const endDate = new Date(end);
+    while (currentDate <= endDate) {
+      dates.push(new Date(currentDate).toISOString().split('T')[0]);
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    return dates;
+  };
+
   // Fetch data when startDate, endDate, or userParam changes
   useEffect(() => {
     const fetchData = async () => {
@@ -32,10 +44,8 @@ function Data() {
 
       let userId;
       if (userParam) {
-        // If user parameter is provided in the URL, use it
         userId = userParam;
       } else {
-        // Otherwise, fall back to the logged-in user's ID
         const userData = await info();
         userId = userData.user_id;
       }
@@ -56,32 +66,34 @@ function Data() {
 
         console.log('API response:', response.data);
 
+        // Generate all dates in the range
+        const dateRange = generateDateRange(startDate, endDate);
+
         // Process the 2D array into a list of objects with date and files
-        const start = new Date(startDate);
-        const fileList = response.data
-          .map((fileArray, index) => {
-            const date = new Date(start);
-            date.setDate(start.getDate() + index);
-            return {
-              date: date.toISOString().split('T')[0], // Format as YYYY-MM-DD
-              files: fileArray,
-            };
-          })
-          .filter((item) => item.files.length > 0); // Filter out empty file arrays
+        const fileList = dateRange.map((date, index) => {
+          const apiIndex = (new Date(date) - new Date(startDate)) / (1000 * 60 * 60 * 24);
+          const files = response.data[apiIndex] || []; // Use empty array if no files for the date
+          return {
+            date,
+            files,
+          };
+        });
 
         setFiles(fileList);
         console.log('Processed files:', fileList);
       } catch (err) {
         console.error('Error fetching data:', err.response?.data || err.message);
         setError('데이터를 불러오는 중 오류가 발생했습니다.');
-        setFiles([]);
+        // If error, still show the date range with empty files
+        const dateRange = generateDateRange(startDate, endDate);
+        setFiles(dateRange.map((date) => ({ date, files: [] })));
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [startDate, endDate, isLoggedIn, userParam]); // Add userParam as a dependency
+  }, [startDate, endDate, isLoggedIn, userParam]);
 
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
@@ -91,7 +103,6 @@ function Data() {
     e.preventDefault();
     if (selectedFile) {
       alert(`"${selectedFile.name}" 파일 업로드 예정 (백엔드 연동 필요)`);
-      // TODO: Implement file upload API call if needed
     }
   };
 
@@ -171,21 +182,25 @@ function Data() {
                     >
                       {item.date}
                     </h4>
-                    {groupFilesBySet(item.files).map(({ setNumber, files }, setIndex) => (
-                      <div key={setIndex} className="file-set">
-                        <div className="set-button">
-                          <span className="set-title">수면데이터{setNumber}</span>
+                    {item.files.length > 0 ? (
+                      groupFilesBySet(item.files).map(({ setNumber, files }, setIndex) => (
+                        <div key={setIndex} className="file-set">
+                          <div className="set-button">
+                            <span className="set-title">수면데이터{setNumber}</span>
+                          </div>
+                          <div className="file-set-details">
+                            {files.map((file, fileIndex) => (
+                              <span key={fileIndex} className="file-detail">
+                                {file}
+                                {fileIndex < files.length - 1 && <span className="file-separator"> | </span>}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                        <div className="file-set-details">
-                          {files.map((file, fileIndex) => (
-                            <span key={fileIndex} className="file-detail">
-                              {file}
-                              {fileIndex < files.length - 1 && <span className="file-separator"> | </span>}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <p className="no-files-message">파일이 없습니다.</p>
+                    )}
                   </div>
                 ))}
               </div>
