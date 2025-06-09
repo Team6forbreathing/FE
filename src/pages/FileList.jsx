@@ -94,7 +94,7 @@ function FileList() {
       console.error('Error fetching data:', err.response?.data || err.message);
       setError('데이터를 불러오는 중 오류가 발생했습니다.');
       setFiles([]);
-      setAhi(30); // 에러 시 기본값
+      setAhi(23); // 에러 시 기본값
     } finally {
       setIsLoading(false);
     }
