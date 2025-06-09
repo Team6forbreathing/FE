@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
         console.log("Token missing or expired. Logging out...");
         setIsLoggedIn(false);
         setDecodedAuth(null); // Reset decodedAuth
-        Cookies.remove("user_name");
+        Cookies.remove("user_role");
         Cookies.remove("accessToken");
         Cookies.remove("refreshToken");
         setIsLoading(false);
@@ -48,13 +48,13 @@ export const AuthProvider = ({ children }) => {
         if (response.data.valid) {
           console.log("Token is valid. User is logged in.");
           setIsLoggedIn(true);
-          const userName = Cookies.get("user_name");
+          const userName = Cookies.get("user_role");
           setDecodedAuth(userName ? atob(userName) : null); // Set decodedAuth
         } else {
           console.log("Server says token is invalid. Logging out...");
           setIsLoggedIn(false);
           setDecodedAuth(null); // Reset decodedAuth
-          Cookies.remove("user_name");
+          Cookies.remove("user_role");
           Cookies.remove("accessToken");
           Cookies.remove("refreshToken");
         }
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }) => {
         console.error("Token validation error:", error.response?.data || error.message);
         setIsLoggedIn(false);
         setDecodedAuth(null); // Reset decodedAuth
-        Cookies.remove("user_name");
+        Cookies.remove("user_role");
         Cookies.remove("accessToken");
         Cookies.remove("refreshToken");
       } finally {
@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }) => {
 
       console.log("Login response:", response.data);
       setIsLoggedIn(true);
-      const userName = Cookies.get("user_name");
+      const userName = Cookies.get("user_role");
       setDecodedAuth(userName ? atob(userName) : null); // Update decodedAuth on login
       await info();
       return { success: true, message: response.data.message || "로그인 성공!" };
@@ -113,7 +113,7 @@ export const AuthProvider = ({ children }) => {
         {
           user_id: email,
           user_pw: password,
-          user_name: name,
+          user_role: name,
           user_gender: gender || null,
           user_age: age || null,
           user_height: height || null,
@@ -143,14 +143,14 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       console.log("Logout skipped - No LOGOUT_API_URL defined.");
-      Cookies.remove("user_name");
+      Cookies.remove("user_role");
       Cookies.remove("accessToken");
       Cookies.remove("refreshToken");
       setIsLoggedIn(false);
       setDecodedAuth(null); // Reset decodedAuth on logout
     } catch (error) {
       console.error("Logout error:", error.response?.data || error.message);
-      Cookies.remove("user_name");
+      Cookies.remove("user_role");
       Cookies.remove("accessToken");
       Cookies.remove("refreshToken");
       setIsLoggedIn(false);
