@@ -94,7 +94,7 @@ function FileList() {
       console.error('Error fetching data:', err.response?.data || err.message);
       setError('데이터를 불러오는 중 오류가 발생했습니다.');
       setFiles([]);
-      setAhi(10); // 에러 시 기본값
+      setAhi(30); // 에러 시 기본값
     } finally {
       setIsLoading(false);
     }
@@ -183,6 +183,17 @@ function FileList() {
     }
   };
 
+  const [showResult, setShowResult] = useState(false);
+  const [isDiagnosing, setIsDiagnosing] = useState(false);
+
+  const handleDiagnosisClick = () => {
+    setIsDiagnosing(true);
+    setTimeout(() => {
+      setShowResult(true);
+      setIsDiagnosing(false);
+    }, 7500);
+  };
+
   const severity1 = ahi !== null ? getSeverity1(ahi) : '[정상]';
   const severity2 = ahi !== null ? getSeverity2(ahi) : getSeverity2(10);
 
@@ -194,7 +205,7 @@ function FileList() {
         <p>{date}에 측정된 수면 데이터 파일입니다.</p>
         <p>파일 이름을 클릭하면, 관련 시각화 자료를 볼 수 있습니다.</p>
         <p
->수면 데이터를 바탕으로 수면 무호흡 정도를 진단한 결과를 확인해보세요!</p>
+        >수면 데이터를 바탕으로 수면 무호흡 정도를 진단한 결과를 확인해보세요!</p>
 
         <div className="visualize-meta">
           <p>업로더: {user}</p>
@@ -275,19 +286,35 @@ function FileList() {
           </table>
         </div>
 
-        <div className={`result-box ${getSeverityClass(severity1)}`}>
-          <img src={resultIcon} alt="진단 결과 아이콘" className="result-icon" />
-          <p className="ahi-title">
-            <strong>{user}</strong>님, <strong>{date}</strong>에 업로드된 데이터를 바탕으로 측정한 수면 무호흡증 진단 결과입니다.
-          </p>
-          <p className="ahi-result">
-            AHI 수치: <strong>{ahi !== null ? ahi : 'N/A'}</strong><br />
-            Apnea Guard 진단 결과: <span className={getSeverityClass(severity1)}><strong>{severity1}</strong></span>
-          </p>
-          <hr />
-          <hr />
-          <p className="ahi-description">{severity2}</p>
+        <div className="diagnosis-section">
+          {!showResult ? (
+            isDiagnosing ? (
+              <div className="spinner-container">
+                <div className="spinner"></div>
+                <p>진단 중입니다. 잠시만 기다려 주세요...</p>
+              </div>
+            ) : (
+              <button onClick={handleDiagnosisClick} className="diagnosis-button">
+                {`${date}의 수면 무호흡 진단하기`}
+              </button>
+            )
+          ) : (
+            <div className={`result-box ${getSeverityClass(severity1)}`}>
+              <img src={resultIcon} alt="진단 결과 아이콘" className="result-icon" />
+              <p className="ahi-title">
+                <strong>{user}</strong>님, <strong>{date}</strong>에 업로드된 데이터를 바탕으로 측정한 수면 무호흡증 진단 결과입니다.
+              </p>
+              <p className="ahi-result">
+                AHI 수치: <strong>{ahi !== null ? ahi : 'N/A'}</strong><br />
+                Apnea Guard 진단 결과: <span className={getSeverityClass(severity1)}><strong>{severity1}</strong></span>
+              </p>
+              <hr />
+              <hr />
+              <p className="ahi-description">{severity2}</p>
+            </div>
+          )}
         </div>
+
       </div>
     </>
   );
