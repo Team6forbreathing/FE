@@ -199,7 +199,7 @@ function Data() {
                         </div>
                       ))
                     ) : (
-                      <p className="no-files-message">파일이 없습니다.</p>
+                      //<p className="no-files-message">파일이 없습니다.</p>
                     )}
                   </div>
                 ))}
