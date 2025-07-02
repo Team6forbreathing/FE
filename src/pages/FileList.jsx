@@ -1,8 +1,8 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import '../styles/FileList.css';
-import Header from '../components/Header';
+import '../styles/FileList.css'; // FileList 스타일시트 가져오기
+import Header from '../components/Header'; // 헤더 컴포넌트 가져오기
 import downloadIcon from '../assets/download.png'; // 다운로드 아이콘
 import resultIcon from '../assets/result.png'; // 진단 결과 아이콘
 import uploadIcon from '../assets/upload.png'; // 업로드 아이콘
@@ -293,8 +293,7 @@ function FileList() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="2">해당 날짜의 χα
-                    <td colSpan="2">해당 날짜의 파일이 없습니다.</td> {/* 파일 없음 메시지 */}
+                  <td colSpan="2">해당 날짜의 파일이 없습니다.</td> {/* 파일 없음 메시지 */}
                 </tr>
               )}
             </tbody>
