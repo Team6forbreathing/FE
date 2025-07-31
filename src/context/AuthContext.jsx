@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
         console.log("토큰이 없거나 만료됨. 로그아웃 처리...");
         setIsLoggedIn(false);
         setDecodedAuth(null);
-        Cookies.remove("user");
+        Cookies.remove("user_name");
         Cookies.remove("accessToken");
         Cookies.remove("refreshToken");
         setIsLoading(false);
@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
         // if (response.data.valid) {
         console.log("토큰 유효. 사용자 로그인 상태 유지 (서버 검사 미구현).");
         setIsLoggedIn(true);
-        const userName = Cookies.get("user");
+        const userName = Cookies.get("user_name");
         setDecodedAuth(userName ? atob(userName) : null);
         // } else {
         //   console.log("서버에서 토큰이 유효하지 않다고 응답...");
@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }) => {
         console.error("토큰 유효성 검사 에러:", error.message);
         setIsLoggedIn(false);
         setDecodedAuth(null);
-        Cookies.remove("user");
+        Cookies.remove("user_name");
         Cookies.remove("accessToken");
         Cookies.remove("refreshToken");
       } finally {
@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }) => {
 
       console.log("로그인 응답:", response.data);
       setIsLoggedIn(true);
-      const userName = Cookies.get("user");
+      const userName = Cookies.get("user_name");
       setDecodedAuth(userName ? atob(userName) : null);
       await info();
       return { success: true, message: response.data.message || "로그인 성공!" };
@@ -157,7 +157,7 @@ export const AuthProvider = ({ children }) => {
       setDecodedAuth(null);
     } catch (error) {
       console.error("로그아웃 에러:", error.response?.data || error.message);
-      Cookies.remove("user");
+      Cookies.remove("user_name");
       Cookies.remove("accessToken");
       Cookies.remove("refreshToken");
       setIsLoggedIn(false);
