@@ -1,120 +1,139 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import '../styles/FileList.css'; // FileList 스타일시트 가져오기
-import Header from '../components/Header'; // 헤더 컴포넌트 가져오기
-import downloadIcon from '../assets/download.png'; // 다운로드 아이콘
-import resultIcon from '../assets/result.png'; // 진단 결과 아이콘
-import uploadIcon from '../assets/upload.png'; // 업로드 아이콘
+import '../styles/FileList.css';
+import Header from '../components/Header';
+import { useAuth } from '../context/AuthContext';
+import downloadIcon from '../assets/download.png';
+import resultIcon from '../assets/result.png';
+import uploadIcon from '../assets/upload.png';
 
 // AHI 수치에 따라 수면 무호흡증의 심각도를 반환하는 함수 (간단한 레이블)
 function getSeverity1(ahi) {
-  if (ahi < 5) return '[정상]'; // AHI 5 미만: 정상
-  if (ahi < 15) return '[주의]'; // AHI 5~15 미만: 주의
-  if (ahi < 30) return '[위험]'; // AHI 15~30 미만: 위험
-  return '[심각]'; // AHI 30 이상: 심각
+  if (ahi < 5) return '[정상]';
+  if (ahi < 15) return '[주의]';
+  if (ahi < 30) return '[위험]';
+  return '[심각]';
 }
 
 // AHI 수치에 따라 수면 무호흡증의 상세 설명을 반환하는 함수
 function getSeverity2(ahi) {
-  if (ahi < 5) return '😊 걱정하지 마세요! 수면 상태가 아주 양호합니다. 😊'; // 정상
-  if (ahi < 15) return '😐 수면 중 가벼운 문제가 관찰되었어요. 생활습관을 점검해보면 좋아요. 😐'; // 주의
-  if (ahi < 30) return '😟 수면 질이 떨어지고 있어요. 개선이 필요할 수 있습니다. 😟'; // 위험
-  return '🚨 수면 중 심각한 이상이 감지되었습니다. 전문가 상담이 꼭 필요해요. 🚨'; // 심각
+  if (ahi < 5) return '😊 걱정하지 마세요! 수면 상태가 아주 양호합니다. 😊';
+  if (ahi < 15) return '😐 수면 중 가벼운 문제가 관찰되었어요. 생활습관을 점검해보면 좋아요. 😐';
+  if (ahi < 30) return '😟 수면 질이 떨어지고 있어요. 개선이 필요할 수 있습니다. 😟';
+  return '🚨 수면 중 심각한 이상이 감지되었습니다. 전문가 상담이 꼭 필요해요. 🚨';
 }
 
 // 심각도에 따라 CSS 클래스 이름을 반환하는 함수
 const getSeverityClass = (level) => {
   switch (level) {
-    case '[정상]':
-      return 'severity-normal'; // 정상 상태 스타일
-    case '[주의]':
-      return 'severity-warning'; // 주의 상태 스타일
-    case '[위험]':
-      return 'severity-risk'; // 위험 상태 스타일
-    case '[심각]':
-      return 'severity-danger'; // 심각 상태 스타일
-    default:
-      return ''; // 기본값 (스타일 없음)
+    case '[정상]': return 'severity-normal';
+    case '[주의]': return 'severity-warning';
+    case '[위험]': return 'severity-risk';
+    case '[심각]': return 'severity-danger';
+    default: return '';
   }
 };
 
-// FileList 컴포넌트: 특정 사용자와 날짜에 대한 파일 목록과 수면 무호흡 진단 결과를 표시
+// FileList 컴포넌트
 function FileList() {
-  const location = useLocation(); // URL 정보 가져오기
-  const navigate = useNavigate(); // 페이지 이동을 위한 useNavigate 훅
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { isLoggedIn, info, decodedAuth } = useAuth();
 
   // URL에서 user와 date 파라미터 추출
   const searchParams = new URLSearchParams(location.search);
-  const user = searchParams.get('user'); // 예: "admin"
-  const date = searchParams.get('date'); // 예: "2025-05-31"
+  const userParam = searchParams.get('user'); // 예: "bbb"
+  const date = searchParams.get('date'); // 예: "2025-08-01"
 
-  const [files, setFiles] = useState([]); // 파일 목록을 저장하는 상태
-  const [selectedFile, setSelectedFile] = useState(null); // 선택된 파일을 저장하는 상태
-  const [ahi, setAhi] = useState(null); // API에서 가져온 AHI 값 저장
-  const [isLoading, setIsLoading] = useState(false); // 로딩 상태
-  const [error, setError] = useState(null); // 에러 메시지 상태
+  const [files, setFiles] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [ahi, setAhi] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [userId, setUserId] = useState(null); // 결정된 userId 저장
 
   // 데이터를 가져오는 비동기 함수
   const fetchData = async () => {
-    if (!user || !date) return; // user 또는 date가 없으면 실행 중지
+    if (!userParam || !date || !isLoggedIn) {
+      setError('사용자 또는 날짜 정보가 누락되었거나 로그인 상태가 아닙니다.');
+      setIsLoading(false);
+      navigate('/login');
+      return;
+    }
 
-    setIsLoading(true); // 로딩 시작
-    setError(null); // 기존 에러 초기화
+    setIsLoading(true);
+    setError(null);
+
+    let determinedUserId;
+    try {
+      const userData = await info();
+      console.log('사용자 정보:', userData);
+      if (!userData || !userData.user_id) {
+        setError('사용자 정보를 불러올 수 없습니다. 다시 로그인해주세요.');
+        setIsLoading(false);
+        navigate('/login');
+        return;
+      }
+      // 관리자는 userParam 사용, 일반 유저는 자신의 user_id로 제한
+      determinedUserId = decodedAuth === 'ADMIN' ? userParam : userData.user_id;
+      console.log('결정된 userId:', determinedUserId);
+      setUserId(determinedUserId);
+    } catch (err) {
+      console.error('info API 에러:', err.message);
+      setError('사용자 정보를 불러오는 중 오류가 발생했습니다.');
+      setIsLoading(false);
+      navigate('/login');
+      return;
+    }
 
     try {
-      // API 호출: 특정 사용자와 날짜의 데이터 가져오기
-      const response = await axios.get(`${import.meta.env.VITE_USER_DATA_LIST_API_URL}${user}`, {
-        headers: {
-          'Content-Type': 'application/json', // 요청 헤더 설정
-        },
-        params: {
-          startDate: date, // 단일 날짜로 요청
-          endDate: date,
-        },
-        withCredentials: true, // 인증 정보 포함
+      console.log('API 요청:', `${import.meta.env.VITE_USER_DATA_LIST_API_URL}${determinedUserId}`, { date });
+      const response = await axios.get(`${import.meta.env.VITE_USER_DATA_LIST_API_URL}${determinedUserId}`, {
+        headers: { 'Content-Type': 'application/json' },
+        params: { startDate: date, endDate: date },
+        withCredentials: true,
       });
 
       console.log('FileList API 응답:', response.data);
 
-      // API 응답(2D 배열)을 날짜와 파일 목록 객체로 변환
       const start = new Date(date);
       const fileList = response.data
         .map((fileArray, index) => {
           const currentDate = new Date(start);
-          currentDate.setDate(start.getDate() + index); // 인덱스 기반 날짜 계산
+          currentDate.setDate(start.getDate() + index);
           return {
-            date: currentDate.toISOString().split('T')[0], // ISO 포맷 날짜
+            date: currentDate.toISOString().split('T')[0],
             files: fileArray,
           };
         })
-        .filter((item) => item.date === date); // 지정된 날짜 데이터만 필터링
+        .filter((item) => item.date === date);
 
       if (fileList.length > 0) {
-        setFiles(fileList[0].files || []); // 파일 목록 설정
-        setAhi(response.data[0]?.ahi || 10); // AHI 값 설정 (기본값 10)
+        setFiles(fileList[0].files || []);
+        setAhi(response.data[0]?.ahi || 10);
       } else {
-        setFiles([]); // 파일 없음
-        setAhi(10); // 기본 AHI 값
+        setFiles([]);
+        setAhi(10);
       }
     } catch (err) {
       console.error('데이터 가져오기 에러:', err.response?.data || err.message);
       setError('데이터를 불러오는 중 오류가 발생했습니다.');
-      setFiles([]); // 에러 시 빈 파일 목록
-      setAhi(23); // 에러 시 기본 AHI 값
+      setFiles([]);
+      setAhi(23);
     } finally {
-      setIsLoading(false); // 로딩 종료
+      setIsLoading(false);
     }
   };
 
-  // user 또는 date 변경 시 데이터 가져오기
+  // userParam, date, isLoggedIn 변경 시 데이터 가져오기
   useEffect(() => {
     fetchData();
-  }, [user, date]); // 의존성 배열: user, date 변경 시 재실행
+  }, [userParam, date, isLoggedIn]);
 
   // 파일 선택 핸들러
   const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]); // 선택된 파일 상태 업데이트
+    setSelectedFile(e.target.files[0]);
   };
 
   // 파일 업로드 핸들러
@@ -125,128 +144,121 @@ function FileList() {
       return;
     }
 
-    setIsLoading(true); // 로딩 시작
-    setError(null); // 기존 에러 초기화
+    if (decodedAuth !== 'ADMIN') {
+      alert('파일 업로드는 관리자만 가능합니다.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
 
     try {
       const formData = new FormData();
-      formData.append('file', selectedFile); // FormData에 파일 추가
-      formData.append('date', date); // FormData에 날짜 추가
+      formData.append('file', selectedFile);
+      formData.append('date', date);
 
-      // 파일 업로드 API 호출
+      console.log('파일 업로드 요청:', `${import.meta.env.VITE_USER_DATA_LIST_API_URL}${userId}/upload`);
       const response = await axios.post(
-        `${import.meta.env.VITE_USER_DATA_LIST_API_URL}${user}/upload`,
+        `${import.meta.env.VITE_USER_DATA_LIST_API_URL}${userId}/upload`,
         formData,
         {
-          headers: {
-            'Content-Type': 'multipart/form-data', // 멀티파트 폼 데이터 설정
-          },
-          withCredentials: true, // 인증 정보 포함
+          headers: { 'Content-Type': 'multipart/form-data' },
+          withCredentials: true,
         }
       );
 
       console.log('파일 업로드 응답:', response.data);
       alert(`"${selectedFile.name}" 파일이 성공적으로 업로드되었습니다.`);
 
-      setSelectedFile(null); // 선택된 파일 초기화
-      await fetchData(); // 업로드 후 파일 목록 새로고침
+      setSelectedFile(null);
+      await fetchData();
     } catch (err) {
       console.error('파일 업로드 에러:', err.response?.data || err.message);
       alert('파일 업로드 중 오류가 발생했습니다.');
       setError('파일 업로드 중 오류가 발생했습니다.');
     } finally {
-      setIsLoading(false); // 로딩 종료
+      setIsLoading(false);
     }
   };
 
   // 파일 다운로드 핸들러
   const handleDownload = async (fileName) => {
     try {
-      // 파일 다운로드 API 호출
+      console.log('파일 다운로드 요청:', `${import.meta.env.VITE_USER_DATA_LIST_API_URL}${userId}/download`, { date, fileName });
       const response = await axios.get(
-        `${import.meta.env.VITE_USER_DATA_LIST_API_URL}${user}/download`,
+        `${import.meta.env.VITE_USER_DATA_LIST_API_URL}${userId}/download`,
         {
-          headers: {
-            'Content-Type': 'application/json', // 요청 헤더 설정
-          },
-          params: {
-            date: date, // 쿼리 파라미터로 날짜 추가
-            file: fileName, // 쿼리 파라미터로 파일명 추가
-          },
-          withCredentials: true, // 인증 정보 포함
-          responseType: 'blob', // 파일 다운로드를 위해 blob 타입 설정
+          headers: { 'Content-Type': 'application/json' },
+          params: { date, file: fileName },
+          withCredentials: true,
+          responseType: 'blob',
         }
       );
 
-      // Blob 데이터를 다운로드 링크로 변환
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', fileName); // 다운로드 파일명 설정
+      link.setAttribute('download', fileName);
       document.body.appendChild(link);
-      link.click(); // 다운로드 실행
-      link.remove(); // 링크 요소 제거
-      window.URL.revokeObjectURL(url); // 메모리 해제
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error('파일 다운로드 에러:', err.response?.data || err.message);
       alert('파일 다운로드 중 오류가 발생했습니다.');
     }
   };
 
-  const [showResult, setShowResult] = useState(false); // 진단 결과 표시 여부
-  const [isDiagnosing, setIsDiagnosing] = useState(false); // 진단 중 상태
+  const [showResult, setShowResult] = useState(false);
+  const [isDiagnosing, setIsDiagnosing] = useState(false);
 
-  // 진단 버튼 클릭 핸들러
   const handleDiagnosisClick = () => {
-    setIsDiagnosing(true); // 진단 시작
+    setIsDiagnosing(true);
     setTimeout(() => {
-      setShowResult(true); // 7.5초 후 결과 표시
-      setIsDiagnosing(false); // 진단 종료
+      setShowResult(true);
+      setIsDiagnosing(false);
     }, 7500);
   };
 
-  // AHI 값에 따른 심각도 계산
-  const severity1 = ahi !== null ? getSeverity1(ahi) : '[정상]'; // 간단한 심각도 레이블
-  const severity2 = ahi !== null ? getSeverity2(ahi) : getSeverity2(10); // 상세 심각도 설명
+  const severity1 = ahi !== null ? getSeverity1(ahi) : '[정상]';
+  const severity2 = ahi !== null ? getSeverity2(ahi) : getSeverity2(10);
 
-  // UI 렌더링
   return (
     <>
-      <Header /> {/* 헤더 컴포넌트 렌더링 */}
-
+      <Header />
       <div className="visualize-container">
         <p>{date}에 측정된 수면 데이터 파일입니다.</p>
         <p>파일 이름을 클릭하면, 관련 시각화 자료를 볼 수 있습니다.</p>
         <p>수면 데이터를 바탕으로 수면 무호흡 정도를 진단한 결과를 확인해보세요!</p>
 
-        {/* 메타 정보 표시 */}
         <div className="visualize-meta">
-          <p>업로더: {user}</p>
-          <p>업로드 날짜: {date}</p>
+          <p>업로더: {userId || userParam || '알 수 없음'}</p>
+          <p>업로드 날짜: {date || '알 수 없음'}</p>
         </div>
 
-        {/* 파일 업로드 폼 (인가 사용자만 가능) */}
-        <div className="upload-wrapper">
-          <form onSubmit={handleUpload} className="upload-form">
-            <input
-              type="file"
-              id="fileUpload"
-              onChange={handleFileChange} // 파일 선택 핸들러
-              style={{ display: 'none' }} // input 숨김
-            />
-            <label htmlFor="fileUpload" className="upload-icon-label">
-              <img src={uploadIcon} alt="파일 업로드" /> {/* 업로드 아이콘 */}
-            </label>
-            <span className="file-name">
-              {selectedFile ? selectedFile.name : '선택된 파일 없음'} {/* 선택된 파일명 표시 */}
-            </span>
-            <button type="submit" className="upload-button" disabled={isLoading}>
-              {isLoading ? '업로드 중...' : '파일 업로드'} {/* 업로드 버튼 */}
-            </button>
-          </form>
-        </div>
+        {/* 파일 업로드 폼: 관리자만 표시 */}
+        {decodedAuth === 'ADMIN' && (
+          <div className="upload-wrapper">
+            <form onSubmit={handleUpload} className="upload-form">
+              <input
+                type="file"
+                id="fileUpload"
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+              />
+              <label htmlFor="fileUpload" className="upload-icon-label">
+                <img src={uploadIcon} alt="파일 업로드" />
+              </label>
+              <span className="file-name">
+                {selectedFile ? selectedFile.name : '선택된 파일 없음'}
+              </span>
+              <button type="submit" className="upload-button" disabled={isLoading}>
+                {isLoading ? '업로드 중...' : '파일 업로드'}
+              </button>
+            </form>
+          </div>
+        )}
 
-        {/* 파일 목록 테이블 */}
         <div className="file-table-list">
           <table className="file-table">
             <thead>
@@ -258,66 +270,65 @@ function FileList() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan="2">데이터를 불러오는 중...</td> {/* 로딩 중 메시지 */}
+                  <td colSpan="2">데이터를 불러오는 중...</td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan="2">{error}</td> {/* 에러 메시지 */}
+                  <td colSpan="2">{error}</td>
                 </tr>
               ) : files.length > 0 ? (
                 files.map((file, idx) => (
                   <tr key={idx}>
                     <td
                       onClick={() =>
-                        navigate(`/visualize/${file}?user=${user}&date=${date}`, {
-                          state: { backgroundLocation: location }, // 시각화 페이지로 이동
+                        navigate(`/visualize/${file}?user=${userId}&date=${date}`, {
+                          state: { backgroundLocation: location },
                         })
                       }
                       className="file-name-cell"
-                      style={{ cursor: 'pointer' }} // 클릭 가능 스타일
+                      style={{ cursor: 'pointer' }}
                     >
-                      {file} {/* 파일명 표시 */}
+                      {file}
                     </td>
                     <td>
                       <div
                         onClick={(e) => {
-                          e.stopPropagation(); // 파일명 클릭 이벤트와 충돌 방지
-                          handleDownload(file); // 다운로드 실행
+                          e.stopPropagation();
+                          handleDownload(file);
                         }}
                         className="download-icon-btn"
                       >
-                        <img src={downloadIcon} alt="Download" /> {/* 다운로드 아이콘 */}
+                        <img src={downloadIcon} alt="Download" />
                       </div>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="2">해당 날짜의 파일이 없습니다.</td> {/* 파일 없음 메시지 */}
+                  <td colSpan="2">해당 날짜의 파일이 없습니다.</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
 
-        {/* 진단 섹션 */}
         <div className="diagnosis-section">
           {!showResult ? (
             isDiagnosing ? (
               <div className="spinner-container">
                 <div className="spinner"></div>
-                <p>진단 중입니다. 잠시만 기다려 주세요...</p> {/* 진단 중 스피너 */}
+                <p>진단 중입니다. 잠시만 기다려 주세요...</p>
               </div>
             ) : (
               <button onClick={handleDiagnosisClick} className="diagnosis-button">
-                {`${date}의 수면 무호흡 진단하기`} {/* 진단 버튼 */}
+                {`${date}의 수면 무호흡 진단하기`}
               </button>
             )
           ) : (
             <div className={`result-box ${getSeverityClass(severity1)}`}>
               <img src={resultIcon} alt="진단 결과 아이콘" className="result-icon" />
               <p className="ahi-title">
-                <strong>{user}</strong>님, <strong>{date}</strong>에 업로드된 데이터를 바탕으로 측정한 수면 무호흡증 진단 결과입니다.
+                <strong>{userId || userParam || '알 수 없음'}</strong>님, <strong>{date}</strong>에 업로드된 데이터를 바탕으로 측정한 수면 무호흡증 진단 결과입니다.
               </p>
               <p className="ahi-result">
                 AHI 수치: <strong>{ahi !== null ? ahi : 'N/A'}</strong><br />
@@ -334,4 +345,4 @@ function FileList() {
   );
 }
 
-export default FileList; // 컴포넌트 내보내기
+export default FileList;
