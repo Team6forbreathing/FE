@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [decodedAuth, setDecodedAuth] = useState(null);
 
-  // 토큰 유효성 검사 및 사용자 정보 조회
+  // 토큰 유효성 검사
   useEffect(() => {
     const validateToken = async () => {
       console.log("토큰 유효성 검사 시작...");
@@ -47,21 +47,21 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        // 사용자 정보 조회로 역할 설정
-        const userInfo = await info();
-        console.log("사용자 정보 조회 결과:", userInfo);
-        if (userInfo && userInfo.user_role) {
-          console.log("사용자 역할 설정:", userInfo.user_role);
-          setIsLoggedIn(true);
-          setDecodedAuth(userInfo.user_role);
-        } else {
-          console.log("user_role 없음. 로그아웃 처리...");
-          setIsLoggedIn(false);
-          setDecodedAuth(null);
-          Cookies.remove("user_name");
-          Cookies.remove("accessToken");
-          Cookies.remove("refreshToken");
-        }
+        // TODO: 서버 유효성 검사 API 호출 필요 (현재 주석 처리됨)
+        // const response = await axios.get('유효성 검사 API URL', { withCredentials: true });
+        // if (response.data.valid) {
+        console.log("토큰 유효. 사용자 로그인 상태 유지 (서버 검사 미구현).");
+        setIsLoggedIn(true);
+        const userRole = Cookies.get("user_role");
+        setDecodedAuth(userRole ? atob(userRole) : null);
+        // } else {
+        //   console.log("서버에서 토큰이 유효하지 않다고 응답...");
+        //   setIsLoggedIn(false);
+        //   setDecodedAuth(null);
+        //   Cookies.remove("user");
+        //   Cookies.remove("accessToken");
+        //   Cookies.remove("refreshToken");
+        // }
       } catch (error) {
         console.error("토큰 유효성 검사 에러:", error.message);
         setIsLoggedIn(false);
@@ -70,13 +70,13 @@ export const AuthProvider = ({ children }) => {
         Cookies.remove("accessToken");
         Cookies.remove("refreshToken");
       } finally {
-        console.log("토큰 유효성 검사 완료. 상태:", { isLoggedIn, decodedAuth });
+        console.log("토큰 유효성 검사 완료.");
         setIsLoading(false);
       }
     };
 
     validateToken();
-  }, []); // 초기 로드 시에만 실행
+  }, []);
 
   // 로그인
   const login = async (email, password) => {
@@ -90,21 +90,12 @@ export const AuthProvider = ({ children }) => {
 
       console.log("로그인 응답:", response.data);
       setIsLoggedIn(true);
-      // 사용자 정보 조회로 역할 설정
-      const userInfo = await info();
-      console.log("로그인 후 사용자 정보:", userInfo);
-      if (userInfo && userInfo.user_role) {
-        console.log("로그인 후 역할 설정:", userInfo.user_role);
-        setDecodedAuth(userInfo.user_role);
-      } else {
-        console.log("로그인 후 user_role 없음.");
-        setDecodedAuth(null);
-      }
+      const userName = Cookies.get("user_name");
+      setDecodedAuth(userName ? atob(userName) : null);
+      await info();
       return { success: true, message: response.data.message || "로그인 성공!" };
     } catch (error) {
       console.error("로그인 에러:", error.response?.data || error.message);
-      setIsLoggedIn(false);
-      setDecodedAuth(null);
       if (error.response) {
         const { status, data } = error.response;
         if (status === 401) {
@@ -116,8 +107,6 @@ export const AuthProvider = ({ children }) => {
         return { success: false, message: data.message || "서버 오류가 발생했습니다." };
       }
       return { success: false, message: "로그인 중 오류가 발생했습니다. 네트워크를 확인해주세요." };
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -154,16 +143,14 @@ export const AuthProvider = ({ children }) => {
         return { success: false, message: data.message || "서버 오류가 발생했습니다." };
       }
       return { success: false, message: "회원가입 중 오류가 발생했습니다. 다시 시도해주세요." };
-    } finally {
-      setIsLoading(false);
     }
   };
 
   // 로그아웃
   const logout = async () => {
     try {
-      console.log("로그아웃 처리...");
-      Cookies.remove("user_name");
+      console.log("로그아웃 처리 - LOGOUT_API_URL 미정의로 건너뜀.");
+      Cookies.remove("user");
       Cookies.remove("accessToken");
       Cookies.remove("refreshToken");
       setIsLoggedIn(false);
@@ -175,8 +162,6 @@ export const AuthProvider = ({ children }) => {
       Cookies.remove("refreshToken");
       setIsLoggedIn(false);
       setDecodedAuth(null);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -195,12 +180,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 로딩 중일 때 표시
-  if (isLoading) {
-    console.log("로딩 중...");
-    return <div>로딩 중...</div>;
-  }
-
   return (
     <AuthContext.Provider value={{ isLoggedIn, isLoading, decodedAuth, info, login, register, logout }}>
       {children}
@@ -209,11 +188,4 @@ export const AuthProvider = ({ children }) => {
 };
 
 // useAuth 훅
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    console.error("useAuth는 AuthProvider 내에서 사용해야 합니다.");
-    throw new Error("useAuth는 AuthProvider 내에서 사용해야 합니다.");
-  }
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);
