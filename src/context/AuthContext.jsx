@@ -52,8 +52,8 @@ export const AuthProvider = ({ children }) => {
         // if (response.data.valid) {
         console.log("토큰 유효. 사용자 로그인 상태 유지 (서버 검사 미구현).");
         setIsLoggedIn(true);
-        const userName = Cookies.get("user_name");
-        setDecodedAuth(userName ? atob(userName) : null);
+        const userRole = Cookies.get("user_role");
+        setDecodedAuth(userName ? atob(userRole) : null);
         // } else {
         //   console.log("서버에서 토큰이 유효하지 않다고 응답...");
         //   setIsLoggedIn(false);
