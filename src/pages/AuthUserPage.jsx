@@ -1,190 +1,128 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
-import axios from "axios";
-import Cookies from "js-cookie";
-import { jwtDecode } from "jwt-decode";
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import '../styles/AuthUserPage.css';
+import Header from '../components/Header';
+import { useAuth } from '../context/AuthContext';
 
-const AuthContext = createContext();
+// AuthUserPage 컴포넌트: 관리자 권한이 있는 사용자만 접근 가능한 페이지
+function AuthUserPage() {
+  const { isLoading, decodedAuth } = useAuth(); // AuthContext에서 로딩 상태와 사용자 권한 정보 가져오기
+  const navigate = useNavigate(); // 페이지 이동을 위한 useNavigate 훅
+  const [users, setUsers] = useState([]); // 사용자 목록을 저장하는 상태
+  const [error, setError] = useState(null); // 에러 메시지를 저장하는 상태
 
-const isTokenExpired = (token) => {
-  if (!token) {
-    console.log("쿠키에 토큰이 없습니다.");
-    return true;
-  }
-  try {
-    const decoded = jwtDecode(token);
-    const currentTime = Math.floor(Date.now() / 1000);
-    console.log("토큰 만료 확인:", { exp: decoded.exp, currentTime });
-    return decoded.exp < currentTime;
-  } catch (error) {
-    console.error("잘못된 토큰 형식:", error.message);
-    return true;
-  }
-};
-
-export const AuthProvider = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [decodedAuth, setDecodedAuth] = useState(null);
-
-  // 토큰 유효성 검사 및 사용자 정보 조회
-  const validateTokenAndFetchInfo = async () => {
-    console.log("토큰 유효성 검사 및 사용자 정보 조회 시작...");
-    const accessToken = Cookies.get("accessToken");
-
-    if (!accessToken || isTokenExpired(accessToken)) {
-      console.log("토큰이 없거나 만료됨. 로그아웃 처리...");
-      setIsLoggedIn(false);
-      setDecodedAuth(null);
-      Cookies.remove("user_name");
-      Cookies.remove("accessToken");
-      Cookies.remove("refreshToken");
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      // 사용자 정보 조회
-      const userInfo = await info();
-      console.log("사용자 정보 조회 결과:", userInfo); // 디버깅
-      if (userInfo && userInfo.user_role) {
-        console.log("사용자 역할 설정:", userInfo.user_role);
-        setIsLoggedIn(true);
-        setDecodedAuth(userInfo.user_role); // user_role로 변경
-      } else {
-        console.log("사용자 정보에 user_role 없음. 로그아웃 처리...");
-        setIsLoggedIn(false);
-        setDecodedAuth(null);
-        Cookies.remove("user_name");
-        Cookies.remove("accessToken");
-        Cookies.remove("refreshToken");
-      }
-    } catch (error) {
-      console.error("토큰 유효성 검사 또는 정보 조회 에러:", error.message);
-      setIsLoggedIn(false);
-      setDecodedAuth(null);
-      Cookies.remove("user_name");
-      Cookies.remove("accessToken");
-      Cookies.remove("refreshToken");
-    } finally {
-      console.log("토큰 유효성 검사 및 정보 조회 완료. decodedAuth:", decodedAuth);
-      setIsLoading(false);
-    }
-  };
-
+  // 컴포넌트 마운트 및 업데이트 시 실행되는 useEffect 훅
   useEffect(() => {
-    validateTokenAndFetchInfo();
-  }, [isLoggedIn]); // isLoggedIn 변경 시 재실행
+    // 권한 확인: 로딩이 완료되고 사용자가 ADMIN이 아닌 경우 홈으로 리디렉션
+    if (!isLoading && decodedAuth !== 'ADMIN') {
+      navigate('/');
+    }
 
-  const login = async (email, password) => {
-    try {
-      console.log("로그인 요청 URL:", import.meta.env.VITE_LOGIN_API_URL);
-      const response = await axios.post(
-        import.meta.env.VITE_LOGIN_API_URL,
-        { user_id: email, user_pw: password },
-        { withCredentials: true }
-      );
+    // 모든 사용자 데이터를 API에서 가져오는 함수
+    const fetchAllUsers = async () => {
+      try {
+        let allUsers = []; // 모든 사용자 데이터를 저장할 배열
+        let page = 0; // 현재 페이지 번호
+        let totalPages = 1; // 총 페이지 수
 
-      console.log("로그인 응답:", response.data);
-      setIsLoggedIn(true);
-      // 로그인 후 즉시 사용자 정보 조회
-      const userInfo = await info();
-      console.log("로그인 후 사용자 정보:", userInfo); // 디버깅
-      if (userInfo && userInfo.user_role) {
-        console.log("로그인 후 역할 설정:", userInfo.user_role);
-        setDecodedAuth(userInfo.user_role); // user_role로 변경
-      } else {
-        console.log("로그인 후 user_role 없음.");
-        setDecodedAuth(null);
-      }
-      return { success: true, message: response.data.message || "로그인 성공!" };
-    } catch (error) {
-      console.error("로그인 에러:", error.response?.data || error.message);
-      if (error.response) {
-        const { status, data } = error.response;
-        if (status === 401) {
-          return { success: false, message: data.message || "잘못된 비밀번호입니다." };
+        // 모든 페이지를 순회하며 사용자 데이터 가져오기
+        while (page < totalPages) {
+          // API 호출: 페이지와 페이지당 데이터 수를 쿼리 파라미터로 전달
+          const response = await fetch(`${import.meta.env.VITE_ALL_USER_LIST}?page=${page}&size=10`, {
+            headers: {
+              'Content-Type': 'application/json' // 요청 헤더 설정
+            }
+          });
+
+          // 응답이 실패하면 에러 발생
+          if (!response.ok) {
+            throw new Error('사용자 데이터를 가져오지 못했습니다.');
+          }
+
+          const data = await response.json(); // 응답 데이터를 JSON으로 파싱
+          // 사용자 데이터를 필요한 필드만 추출하여 매핑
+          const mappedUsers = data.content.map(user => ({
+            userId: user.userId,
+            userName: user.userName
+          }));
+
+          // 기존 사용자 배열에 새로 가져온 사용자 데이터 추가
+          allUsers = [...allUsers, ...mappedUsers];
+          totalPages = data.totalPages; // 총 페이지 수 업데이트
+          page++; // 다음 페이지로 이동
         }
-        if (status === 404) {
-          return { success: false, message: data.message || "사용자를 찾을 수 없습니다." };
-        }
-        return { success: false, message: data.message || "서버 오류가 발생했습니다." };
+
+        setUsers(allUsers); // 사용자 목록 상태 업데이트
+      } catch (err) {
+        setError(err.message); // 에러 발생 시 에러 메시지 저장
       }
-      return { success: false, message: "로그인 중 오류가 발생했습니다. 네트워크를 확인해주세요." };
-    }
-  };
+    };
 
-  const register = async (name, email, password, gender, age, height, weight, comp) => {
-    try {
-      console.log("회원가입 요청 URL:", import.meta.env.VITE_REGISTRATION_API_URL);
-      const response = await axios.post(
-        import.meta.env.VITE_REGISTRATION_API_URL,
-        {
-          user_id: email,
-          user_pw: password,
-          user: name,
-          user_gender: gender || null,
-          user_age: age || null,
-          user_height: height || null,
-          user_weight: weight || null,
-          user_comp: comp === "true" ? true : comp === "false" ? false : null,
-        },
-        { withCredentials: true }
-      );
-      console.log("회원가입 응답:", response.data);
-      return { success: true, message: response.data.message || "회원가입 성공!" };
-    } catch (error) {
-      console.error("회원가입 에러:", error.response?.data || error.message);
-      if (error.code === "ERR_NETWORK") {
-        return { success: false, message: "서버에 연결할 수 없습니다. 네트워크를 확인해주세요." };
-      }
-      if (error.response) {
-        const { status, data } = error.response;
-        if (status === 400) {
-          return { success: false, message: data.message || "필수 필드가 누락되었거나 ID가 이미 존재합니다." };
-        }
-        return { success: false, message: data.message || "서버 오류가 발생했습니다." };
-      }
-      return { success: false, message: "회원가입 중 오류가 발생했습니다. 다시 시도해주세요." };
+    // 로딩이 완료된 경우에만 사용자 데이터 가져오기
+    if (!isLoading) {
+      fetchAllUsers();
     }
-  };
+  }, [isLoading, decodedAuth, navigate]); // 의존성 배열: isLoading, decodedAuth, navigate 변경 시 재실행
 
-  const logout = async () => {
-    try {
-      console.log("로그아웃 처리...");
-      Cookies.remove("user_name");
-      Cookies.remove("accessToken");
-      Cookies.remove("refreshToken");
-      setIsLoggedIn(false);
-      setDecodedAuth(null);
-    } catch (error) {
-      console.error("로그아웃 에러:", error.response?.data || error.message);
-      Cookies.remove("user_name");
-      Cookies.remove("accessToken");
-      Cookies.remove("refreshToken");
-      setIsLoggedIn(false);
-      setDecodedAuth(null);
-    }
-  };
+  // 로딩 중일 때 표시되는 UI
+  if (isLoading) {
+    return (
+      <>
+        <Header /> {/* 헤더 컴포넌트 렌더링 */}
+        <main className="auth-user-page">
+          <section className="auth-user-section">
+            <p>로딩 중...</p> {/* 로딩 메시지 표시 */}
+          </section>
+        </main>
+      </>
+    );
+  }
 
-  const info = async () => {
-    try {
-      console.log("사용자 정보 요청 URL:", import.meta.env.VITE_USER_INFO_API_URL);
-      const response = await axios.get(import.meta.env.VITE_USER_INFO_API_URL, {
-        withCredentials: true,
-      });
-      console.log("사용자 정보 수신:", response.data);
-      return response.data;
-    } catch (error) {
-      console.error("사용자 정보 가져오기 에러:", error.response?.data || error.message);
-      return null;
-    }
-  };
+  // 에러 발생 시 표시되는 UI
+  if (error) {
+    return (
+      <>
+        <Header /> {/* 헤더 컴포넌트 렌더링 */}
+        <main className="auth-user-page">
+          <section className="auth-user-section">
+            <p>에러: {error}</p> {/* 에러 메시지 표시 */}
+          </section>
+        </main>
+      </>
+    );
+  }
 
+  // 정상적으로 사용자 목록을 렌더링하는 UI
   return (
-    <AuthContext.Provider value={{ isLoggedIn, isLoading, decodedAuth, info, login, register, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
+    <>
+      <Header /> {/* 헤더 컴포넌트 렌더링 */}
+      <main className="auth-user-page">
+        <section className="auth-user-section">
+          <p className="user-list-title">사용자 목록</p> {/* 사용자 목록 제목 */}
 
-export const useAuth = () => useContext(AuthContext);
+          {/* 사용자 목록 헤더 */}
+          <div className="user-list-header">
+            <span>사용자 이름</span>
+            <span>사용자 ID</span>
+          </div>
+
+          {/* 스크롤 가능한 사용자 목록 */}
+          <ul className="user-list-scroll">
+            {users.map((user) => (
+              <li
+                key={user.userId} // 각 사용자 항목의 고유 키
+                className="user-list-item"
+                onClick={() => navigate(`/Data?user=${user.userId}`)} // 클릭 시 해당 사용자 데이터 페이지로 이동
+              >
+                <span>{user.userName}</span> {/* 사용자 이름 표시 */}
+                <span>{user.userId}</span> {/* 사용자 ID 표시 */}
+              </li>
+            ))}
+          </ul>
+        </section>
+      </main>
+    </>
+  );
+}
+
+export default AuthUserPage; // 컴포넌트 내보내기
